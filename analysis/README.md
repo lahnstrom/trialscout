@@ -44,6 +44,12 @@ All scripts use `set.seed(42)` for reproducibility.
 | `data/response_time.csv` | <1 MB | Script 2b | Processing time data |
 | `data/results-final-run.csv` | 6.5 MB | Script 2c | Main tool output for analysis |
 
+### Generated (not checked in)
+
+| File | Used by | How to generate |
+|------|---------|-----------------|
+| `data/publications.csv` | Script 2c | `node code/node_script/generate_publications_csv.js <json-dir>` |
+
 ### Not included (too large)
 
 | File | Size | Used by | How to obtain |
@@ -61,4 +67,6 @@ All outputs are written to `out/`:
 ## Additional files
 
 - `code/*.dot` — Graphviz diagrams for the tool architecture flowcharts
-- `code/node_script/` — Node.js helper for sponsor/funder data enrichment (used by Script 1b)
+- `code/node_script/` — Node.js helpers:
+  - `process_sponsors_json.js` — Sponsor/funder data enrichment (used by Script 1b)
+  - `generate_publications_csv.js` — Generates `data/publications.csv` from tool JSON output (used by Script 2c). Usage: `node generate_publications_csv.js <json-dir> [output-path]`

@@ -173,7 +173,7 @@ dev.off()
 
 # ===== 3. PUBLICATION-LEVEL ANALYSIS =====
 
-tool_pubs <- read.csv("./data/random_sample_1_publications.csv")
+tool_pubs <- read.csv("./data/publications.csv")
 
 tool_pubs <- tool_pubs %>%
   mutate(has_results = ifelse(has_results == "true", T, F)) %>%
