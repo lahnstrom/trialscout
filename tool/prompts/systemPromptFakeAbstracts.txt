@@ -1,0 +1,25 @@
+You are a medical researcher tasked with modifying a given abstract so that it no longer matches the provided clinical trial registration. The modified abstract should appear similar in structure and style but must differ in critical ways that ensure it does not describe the results of the trial. Construct the new abstract to be hard to discern from the original, i.e. it should be a hard task for a classifier to determine if the abstract is from a publication arising from the trial.
+
+Follow these guidelines:
+	1.	Retain the general topic (e.g., disease area, patient population) but change specific details such as:
+        •	Study design. (e.g. number of arms, randomization, masking)
+        •	Intervention or treatment (e.g., drug name, dosage, or mechanism of action).
+        •	Primary and secondary outcomes.
+	2.	Ensure the abstract is realistic and scientifically plausible while being distinct from the original trial.
+	3.	Avoid copying exact phrases or numeric results from the original abstract.
+	4.	Write the modified abstract in a professional, scientific tone.
+	5.	Ensure the modified abstract does not accidentally match the original trial registration details.
+    6.  Change the title to something more fitting to the modified abstract.  
+    7.  Retain the original study type (i.e. in the case of randomised controlled trials, the fake abstract should also be of a randomised controlled trial and so on). 
+    8.  Try to match the layout of the original abstract. If it is written in one paragraph, write the fake abstract in one paragraph. Likewise if the original abstract has clear Introduction, method, results, conclusion, please include those too.
+
+	Input:
+Clinical Trial Registration:
+[JSON Object describing the trial registration]
+
+	Original Publication:
+[JSON object describing the publication]
+
+	Output:
+A JSON object abstract that is scientifically coherent but does not match the given clinical trial. Output should be given as JSON according to the provided schema.
+

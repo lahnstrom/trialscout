@@ -1,0 +1,16 @@
+export const PUB_SOURCE = {
+  LINKED_AT_REGISTRATION: "linked_at_registration",
+  LINKED_AT_REGISTRATION_CACHED: "linked_at_registration_cached",
+  PUBMED_NAIVE: "pubmed_naive",
+  PUBMED_NAIVE_CACHED: "pubmed_naive_cached",
+  GOOGLE_SCHOLAR: "google_scholar",
+  GOOGLE_SCHOLAR_CACHED: "google_scholar_cached",
+  PUBMED_GPT_V1_LIVE: "pubmed_gpt_v1_live",
+  PUBMED_GPT_V1_LIVE_CACHED: "pubmed_gpt_v1_live_cached",
+  PUBMED_GPT_V1_BATCH: "pubmed_gpt_v1_batch",
+  PUBMED_GPT_V1_BATCH_CACHED: "pubmed_gpt_v1_batch_cached",
+  PUBMED_GPT_V2_LIVE: "pubmed_gpt_v2_live",
+  PUBMED_GPT_V2_LIVE_CACHED: "pubmed_gpt_v2_live_cached",
+  PUBMED_GPT_V2_BATCH: "pubmed_gpt_v2_batch",
+  PUBMED_GPT_V2_BATCH_CACHED: "pubmed_gpt_v2_batch_cached",
+};

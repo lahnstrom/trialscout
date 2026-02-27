@@ -1,0 +1,66 @@
+{
+  "batch": {
+    "modelQueryV1": "gpt-5.1",
+    "modelQueryV2": "gpt-5.1",
+    "modelResults": "gpt-5.1",
+    "reasoningEffortQueryV1": "medium",
+    "reasoningEffortQueryV2": "medium",
+    "reasoningEffortResults": "medium",
+    "maxTokensQueryV1": 10000,
+    "maxTokensQueryV2": 10000,
+    "maxTokensResults": 10000,
+    "completionWindow": "24h",
+    "systemPromptQueriesV1": "./prompts/systemPromptPubmedSearchGeneration.txt",
+    "systemPromptQueriesV2": "./prompts/systemPromptGptQueryV2.txt",
+    "systemPromptResults": "./prompts/systemPromptSingleAbstract.txt",
+    "maxRequestsPerBatch": 50000,
+    "maxBytesPerBatch": 200000000,
+    "maxTokensPerDay": 200000000,
+    "safetyBuffer": 0.95,
+    "strategies": [
+      "linked_at_registration",
+      "pubmed_naive",
+      "google_scholar",
+      "pubmed_gpt_v1_batch",
+      "pubmed_gpt_v2_batch"
+    ]
+  },
+  "live": {
+    "modelQueryV1": "gpt-5.1",
+    "modelQueryV2": "gpt-5.1",
+    "modelResults": "gpt-5.1",
+    "reasoningEffortQueryV1": "medium",
+    "reasoningEffortQueryV2": "medium",
+    "reasoningEffortResults": "medium",
+    "maxTokensQueryV2": 10000,
+    "maxTokensResults": 10000,
+    "pubLimit": 15,
+    "systemPromptQueriesV1": "./prompts/systemPromptPubmedSearchGeneration.txt",
+    "systemPromptQueriesV2": "./prompts/systemPromptGptQueryV2.txt",
+    "systemPromptResults": "./prompts/systemPromptSingleAbstract.txt",
+    "strategies": [
+      "linked_at_registration_cached",
+      "pubmed_naive_cached",
+      "google_scholar_cached",
+      "pubmed_gpt_v1_live_cached",
+      "pubmed_gpt_v2_live_cached"
+    ]
+  },
+  "scraping": {
+    "nDoisPerSource": 3,
+    "nRetries": 3,
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36"
+  },
+  "cache": {
+    "ttl": {
+      "default": 604800,
+      "pubmed_naive": 604800,
+      "google_scholar": 604800,
+      "linked_registration": 2592000,
+      "gpt_queries": 7776000,
+      "gpt_queries_v2": 7776000,
+      "batch_queries_v1": 604800,
+      "batch_queries_v2": 604800
+    }
+  }
+}

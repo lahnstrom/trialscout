@@ -1,0 +1,39 @@
+# Dependencies
+node_modules/
+
+# Environment
+.env
+tool/.env
+
+# Caches
+tool/cache/
+tool/request_cache/
+
+# OS
+.DS_Store
+
+# R
+.Rproj.user/
+.RData
+.Rhistory
+Rplots.pdf
+
+# Generated data (too large for git)
+ctg-studies.json
+ctg-studies-*.csv
+final-sample-ctgov.csv
+database.db
+
+# Batch results (regenerated)
+tool/batch_results/*
+!tool/batch_results/.empty
+!tool/batch_results/**/.empty
+
+# Output (regenerated)
+tool/out/*
+!tool/out/.empty
+
+# Misc
+*.zip
+~$*.docx
+~$*.xlsx

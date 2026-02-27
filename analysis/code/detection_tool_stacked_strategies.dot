@@ -1,0 +1,36 @@
+digraph {
+
+graph [layout = dot, rankdir = TB ]
+
+# define the global styles of the nodes. We can override these in box if we wish
+node [shape = rectangle style = filled fontsize = 28 width = 3.5]
+
+nctid [label = 'NCT-ID' fillcolor = "#000000" fontcolor=white fontcolor=white]
+ctgov [label = 'Registration lookup from\nClinicalTrials.gov' shape=ellipse fillcolor="#666666" fontcolor=white ]
+registration [label = 'Registration metadata' fillcolor = "#000000" fontcolor=white]
+
+publication_discovery [label = 'Publication discovery' shape=ellipse fillcolor="#666666" fontcolor=white]
+
+linked_publications [label = 'Publications linked\nat registration' shape=cylinder fillcolor="#F1F1F1"]
+pubmed_search [label = 'Predefined PubMed query' shape=cylinder fillcolor="#F1F1F1"]
+pubmed_gpt [label = 'LLM PubMed query' shape=cylinder fillcolor="#F1F1F1"]
+nct_match [label = 'Offline PubMed search\nof NCTID' shape=cylinder fillcolor="#F1F1F1"]
+google_scholar [label = 'Google Scholar and\nCitation Match API' shape=cylinder fillcolor="#F1F1F1"]
+
+candidate_publications [label = 'Candidate publications' fillcolor = "#000000" fontcolor=white]
+llm [label = 'Result detection\nusing ChatGPT-4o-mini' shape=ellipse fillcolor="#666666" fontcolor=white]
+result_publications [label= 'Result publications' fillcolor = "#000000" fontcolor=white ]
+result_detection [label= 'Result detection -\nyes/no' fillcolor = "#000000" fontcolor=white]
+
+  { nctid -> ctgov -> registration } 
+  { 
+    { rank = same; publication_discovery } -> 
+    { edge[color=white] { rank=same; linked_publications; pubmed_search;} -> {rank = same; pubmed_gpt; nct_match; google_scholar} } ->
+    { rank = same; candidate_publications } -> 
+    { rank = same; llm } ->
+    { rank = same; result_publications -> result_detection }
+  }
+
+registration -> publication_discovery;
+registration -> candidate_publications;
+}

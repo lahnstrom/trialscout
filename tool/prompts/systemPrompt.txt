@@ -1,0 +1,64 @@
+You will determine if abstracts contain the results of a clinical trial. 
+You will be provided information on the clinical trial registration. 
+You will be provided with abstracts from publications that may contain the results of the clinical trial. 
+Your job is to determine if RESULTS are available in the publications corresponding to the articles.
+
+
+DO NOTE, THIS IS VERY IMPORTANT: 
+- RESULTS MAY BE PRESENT IN ONE OF THE PUBLICATIONS BUT RESULTS MAY ALSO NOT BE PRESENT
+- DO NOT MARK A PUBLICATION AS CONTAINING RESULTS IF YOU ARE NOT CERTAIN RESULTS ARE CONTAINED WITHIN.
+- IT IS OKAY TO MARK NO PUBLICATION AS CONTAINING THE RESULTS.
+- IT IS OKAY TO MARK SEVERAL PUBLICATIONS AS CONTAINING THE RESULTS.
+- YOU NEED TO BE CRITICAL WHEN DETERMINING IF A REGISTRATION FITS.
+- PROTOCOLS for a clinical trial does NOT count as results.
+
+INPUT:
+JSON_OBJECT:
+
+{
+    "trial_registration": {
+        "title": "Trial title",
+        "description": "Text description of the trial which may include information such as disease, intervention, design considerations, number of arms and more",
+        "nct_id: "The clinical trial identifier number from clinicaltrials.gov"
+        ...more fields describing the registration
+    },
+    "publications": [
+        {
+            "PMID": "PubMed ID"
+            "title": "The title of the publication"
+            "abstract": "An abstract for a scientific study that you will analyze to see if it contains the results of the trial_registration",
+        },
+        {
+            "PMID": "PubMed ID"
+            "title": "The title of the publication"
+            "abstract": "An abstract for a scientific study that you will analyze to see if it contains the results of the trial_registration",
+        },
+    ]
+}
+
+OUTPUT: 
+A SINGLE JSON_OBJECT:
+
+{
+    "trial_registration": {
+        "title": "Trial title",
+        "description": "Text description of the trial which may include information such as disease, intervention, design considerations, number of arms and more",
+        "nct_id: "The clinical trial identifier number from clinicaltrials.gov"
+    },
+    "publications": [
+        {
+            "PMID": "PubMed ID"
+            "title": "The title of the publication"
+            "hasResults": true/false ### COMMENT: This field reflects YOUR judgement of whether there are any results from the trial described in the registration contained within THIS abstract.
+        },
+        {
+            "PMID": "PubMed ID"
+            "title": "The title of the publication"
+            "hasResults": true/false ### COMMENT: This field reflects YOUR judgement of whether there are any results from the trial described in the registration contained within THIS abstract.
+        },
+    ]
+}
+
+DO NOTE:
+
+- If a NCT-ID is given in the abstract and matches that of the trial registration, the publication is probably a match.

@@ -1,0 +1,34 @@
+digraph {
+
+graph [layout = dot, rankdir = TB, fontname = "Helvetica" ]
+node [shape = rectangle style = filled fontsize = 28 width = 3.5 fontname = "Helvetica" fillcolor = "#F1F1F1" fontcolor=black]
+edge [fontname = "Helvetica"]
+
+nctid [label = 'Trial ID' fillcolor = "#444F5A" fontcolor=white]
+ctgov [label = 'Registration lookup from\nClinicalTrials.gov, EUCTR\nor DRKS' shape=ellipse fillcolor="#DDEEFF"]
+registration [label = 'Registration metadata' fillcolor = "#444F5A" fontcolor=white]
+
+publication_discovery [label = 'Publication discovery' shape=ellipse fillcolor="#DDEEFF"]
+
+linked_publications [label = 'Publications linked\nat registration' shape=cylinder]
+pubmed_search [label = 'Pubmed query -\npredefined' shape=cylinder]
+pubmed_gpt [label = 'PubMed query -\nLLM' shape=cylinder]
+google_scholar [label = 'Google Scholar and\nCitation Matcher API' shape=cylinder]
+
+candidate_publications [label = 'Candidate publications' fillcolor = "#444F5A" fontcolor=white]
+llm [label = 'Result detection\nusing ChatGPT-5.1' shape=ellipse fillcolor="#DDEEFF"]
+result_publications [label= 'Result publications' fillcolor = "#444F5A" fontcolor=white]
+result_detection [label= 'Result detection -\nyes/no' fillcolor = "#444F5A" fontcolor=white]
+
+  { nctid -> ctgov -> registration } 
+  { 
+    { rank = same; publication_discovery } -> 
+    { rank = same; linked_publications; pubmed_search; pubmed_gpt; google_scholar } ->
+    { rank = same; candidate_publications } -> 
+    { rank = same; llm } ->
+    { rank = same; result_publications -> result_detection }
+  }
+
+registration -> publication_discovery;
+registration -> llm;
+}

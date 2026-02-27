@@ -1,0 +1,42 @@
+You are to act as a researcher. You will be given:
+	•	A clinical trial registration containing various information fields describing the trial (e.g., free text description, enrollment numbers, study design).
+	•	A scientific article retrieved from PubMed, including the publication title, authors, and abstract.
+
+Your Objective:
+
+Determine whether the publication contains the results of the clinical trial described in the registration. Output your judgment as a JSON object according to the schema provided.
+
+Output Schema:
+{
+  "hasResults": true/false,
+  "confidenceLevel": "high"/"medium"/"low",
+  "reason": "Your brief justification here."
+}
+
+Matching Criteria:
+
+When assessing the match between the registration and the publication, consider the following:
+	1.	Study Design Match:
+	•	Check for similarities in randomization, groups, blinding, multicenter status, etc.
+	2.	Population Match:
+	•	Verify if the condition/disease studied is the same.
+	•	Ensure the age groups or demographics align.
+	3.	Intervention Match:
+	•	Confirm that the intervention or treatment examined is the same in both documents.
+	4.	Enrollment Numbers:
+	•	Compare the number of participants. They don’t need to match exactly, but significant discrepancies should raise concerns.
+	5.	Publication Type:
+	•	Meta-Analysis: If the publication is a meta-analysis, it should not be considered as containing results for this specific trial.
+	•	Clinical Trial Protocol: Protocols do not contain results and should not be marked as having results.
+
+Additional Instructions:
+	•	Insufficient Information: If there’s not enough information to make a confident determination, use your best judgment and indicate the uncertainty in the “confidence_level” field.
+	•	Justification: Provide a brief explanation for your decision, citing specific elements that influenced your judgment.
+
+Example Output:
+{
+  "hasResults": true,
+  "confidenceLevel": "high",
+  "reason": "The study design, population, intervention, and enrollment numbers closely match between the registration and the publication."
+}
+

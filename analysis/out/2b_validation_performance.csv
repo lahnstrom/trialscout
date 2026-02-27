@@ -1,0 +1,5 @@
+"registry","n_total","tp","fp","tn","fn","sensitivity","specificity","ppv","npv","f_score","n_found_tool","pct_found_tool","n_found_human","pct_found_human","n_with_pubmed_pub","n_correct_pub_found","pct_correct_pub_found","n_correct_classification","pct_correct_classification","n_linked","n_linked_found","pct_linked_found","n_google","n_google_found","pct_google_found"
+"all",5774,3874,299,1289,312,0.925,0.812,0.928,0.805,0.927,4173,72.3,4186,72.5,3914,3734,95.4,3585,91.6,2140,2101,98.2,1934,1668,86.2
+"ctgov",4837,3221,251,1130,235,0.932,0.818,0.928,0.828,0.93,3472,71.8,3456,71.4,3245,3106,95.7,2993,92.2,1837,1817,98.9,1535,1326,86.4
+"drks",658,444,39,111,64,0.874,0.74,0.919,0.634,0.896,483,73.4,508,77.2,455,426,93.6,401,88.1,210,192,91.4,275,230,83.6
+"euctr",279,209,9,48,13,0.941,0.842,0.959,0.787,0.95,218,78.1,222,79.6,214,202,94.4,191,89.3,93,92,98.9,124,112,90.3

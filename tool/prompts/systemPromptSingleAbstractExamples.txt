@@ -1,0 +1,142 @@
+- You will act as a researcher. 
+- You will be given a registration for a clinical trial. The registration will contain various information fields describing the clinical trial, such as free text description, enrollment numbers, study design, and more. 
+- You will also receive a scientific article retrieved from PubMed. It contains the publication title, authors, and abstract. The publication may or may not relate to the clinical trial. 
+- Your task is to determine if the publication will contain the results of the previously given trial registration. You will output your best guess on whether this publication contains the results of said registration.
+- You will provide your judgement as a JSON object according to the schema provided to you
+
+When attempting to match a registration to a publication, please consider the following:
+- Does the study design match? Consider randomization, groups, blinding, if the trial is multicenter, and so on.
+- Does the population match? Is the condition the same in both the registration and the publication? Is the same age group included?
+- Does the intervention match? Is the registration and publication actually examining the same intervention?
+- Is the enrollment numbers similar between registration and publication? It does not need to match exactly, but beware of discrepancies of high magnitude here.
+- Is the publication actually a meta-analysis? Meta-analysis may report results of many different studies but should NOT be deemed as having results for this registration.
+- Is the publication only a clinical trial protocol? Protocols do not contain any results and should therefore NOT be marked as having results.
+
+Some examples of how to handle the task, with the user Input, your Output, and some comments to guide you in the decision making:
+
+Example 1:
+    Input:
+        REGISTRATION:
+        Brief Title: Use of SMSs to Improve Attendance to Cervical Cancer Follow-up Screening
+        Official Title: Text Messages to Increase Attendance to Follow-up Cervical Cancer Screening Appointments Among HPV Positive Tanzanian Women (Connected2Care)
+        Organization: Odense University Hospital
+        NCTID: NCT02509702
+        Study Type: INTERVENTIONAL
+        Summary: This study evaluates the effect of the SMS intervention 'Connected2Care' on the attendance rate to cervical cancer screening follow-up appointments.
+        Description: Connected2Care is a non-blinded, multicentre, parallel-group, randomised controlled trial. Tanzanian Women testing positive to HR HPV at inclusion are randomly assigned in an allocation ratio of 1:1 to the SMS intervention or the control group (standard care). In a period of 10 months, the intervention group will receive 15 one-directional health educative text messages and SMS-reminders for their appointment. The total sample size will be 700 with 350 women in each study arm. Primary outcome is attendance rate for follow-up. Secondary objectives are cost-effectiveness measured through incremental ratios and knowledge of cervical cancer by a 16-item true/false scale questionnaire at baseline and follow-up.
+        -----
+
+        PUBLICATION:
+        Title: Effectiveness of One-Way Text Messaging on Attendance to Follow-Up Cervical Cancer Screening Among Human Papillomavirus-Positive Tanzanian Women (Connected2Care): Parallel-Group Randomized Controlled Trial.
+        Author: Ditte S Linde, Marianne S Andersen, Julius Mwaiselage, Rachel Manongi, Susanne K Kjaer, Vibeke Rasch
+        Abstract: BACKGROUND:
+        Rapid human papillomavirus (HPV) DNA testing is an emerging cervical cancer screening strategy in resource-limited countries, yet it requires follow-up of women who test HPV positive.OBJECTIVE:
+        This study aimed to determine if one-way text messages improved attendance to a 14-month follow-up cervical cancer screening among HPV-positive women.METHODS:
+        This multicenter, parallel-group randomized controlled trial was conducted at 3 hospitals in Tanzania. Eligible participants were aged between 25 and 60 years, had tested positive to a rapid HPV test during a patient-initiated screening, had been informed of their HPV result, and had a private mobile phone with a valid number. Participants were randomly assigned in a 1:1 ratio to the intervention or control group through an incorporated algorithm in the text message system. The intervention group received one-way text messages, and the control group received no text messages. The primary outcome was attendance at a 14-month health provider-initiated follow-up screening. Participants were not blinded, but outcome assessors were. The analysis was based on intention to treat.RESULTS:
+        Between August 2015 and July 2017, 4080 women were screened for cervical cancer, of which 705 were included in this trial-358 women were allocated to the intervention group, and 347 women were allocated to the control group. Moreover, 16 women were excluded before the analysis because they developed cervical cancer or died (8 from each group). In the intervention group, 24.0% (84/350) women attended their follow-up screening, and in the control group, 23.8% (80/335) women attended their follow-up screening (risk ratio 1.02, 95% CI 0.79-1.33).CONCLUSIONS:
+        Attendance to a health provider-initiated follow-up cervical cancer screening among HPV-positive women was strikingly low, and one-way text messages did not improve the attendance rate. Implementation of rapid HPV testing as a primary screening method at the clinic level entails the challenge of ensuring a proper follow-up of women.TRIAL REGISTRATION:
+        ClinicalTrials.gov NCT02509702; https://clinicaltrials.gov/ct2/show/NCT02509702.INTERNATIONAL REGISTERED REPORT IDENTIFIER (IRRID):
+        RR2-10.2196/10.2196/15863.
+    Output:
+        JSON ACCORDING TO PROVIDED SCHEMA:
+        {
+            "hasResults": true,
+            "reason": "The publication reports on a multicenter, parallel-group randomized controlled trial that evaluates the effectiveness of one-way text messaging on attendance to cervical cancer screenings among HPV-positive women, which directly corresponds to the intervention described in the trial registration. It references the same trial registration number (NCT02509702), indicating it discusses the results of that specific study."
+        }
+    Comments:
+        This is a good example. You compare the publication study design (multicenter, parallell-group, randomized controlled trial) with that of the registration and find that it matches. You compare the intervention and find that it roughly matches. You compare the studied population and find that it matches. You even compare the NCT-ID and find that it matches. Excellent comparison resulting in a correct judgement.
+
+Example 2:
+    Input:
+        REGISTRATION:
+        Brief Title: Promoting Health in Healthy Living Centres - a Clinical Study Among Children
+        Official Title: Promoting Health in Healthy Living Centres - a Clinical Study Among Famililies With Overweight Children
+        Organization: University of Bergen
+        NCTID: NCT02290171
+        Study Type: INTERVENTIONAL
+        Summary: The overall aim is to evaluate if a familybased intervention, targeting overweight and obese children and their parents, has a long-term positive effect on weight development and health of the children. The alternative hypothesis to the zero hypothesis is that the children with overweight and obesity who participate in a one-year intervention together with their parents, both at completion of the six months intervention and at long term follow up will have reduced their BMI-for-age z-score (Iso-BMI) and have adopted healthy habits. The behavioral models and educational strategies will be tailored (by age, gender etc.) and include both general information and practical learning sessions.
+        Description: The investigators intend to perform a controlled clinical trial on interventions on a systemic level.
+
+        The target group is overweight and obese children between 6 and 10 years old, their parents, community administrators and public health nurses. The overall aim is to evaluate if a familybased intervention, targeting overweight and obese children and their parents, has a long-term positive effect on weight development of the children. The alternative hypothesis to the zero hypothesis is that the children with overweight and obesity who participate with their parents, both at completion of the six months intervention and at long term follow up (2 years) will have reduced their BMI-for-age z-score (Iso-BMI). The behavioral models and educational strategies will be tailored (by age, gender etc.) and include both general information and practical learning sessions. The program will offer guided active play, defined as spontaneous gross locomotor movement in which children engage to amuse and to occupy themselves.
+
+        Parents will attend to workshops intending to increase knowledge and awareness of family structure, healthy eating habits and practical suggestions for implementing healthy behaviors into everyday life. Parents will be educated on how to use these strategies at home, to further support their children in improving their behaviors. This community based study is the support by the local leadership and collaboration with locally based sports clubs. The primary outcome variable, child BMI-for-age z-score will be measured at referral, inclusion, after 6 months, and at 1 and 2 years post intervention. Secondary outcome variables, measured at inclusion and at the end of intervention, are child activity pattern, screen viewing time, eating habits, sleeping patterns and body composition as well as parent BMI, body composition, exercise habits, perception of health, experience of parenthood and level of parental stress.
+
+        Physical activity level as well as sleep duration and -quality will be recorded using biaxial accellerometers. A validated food diary will be used. The participants will also be asked to complete a questionnaire including questions about screen viewing time, self-perceived healt, sleeping patterns (children) and perceived autonomy support and autonomous regulations (parents).
+        -----
+
+        PUBLICATION:
+        Title: Primary health care challenges: insights from older people with multimorbidity in Malawi - a qualitative study.
+        Author: Duncan Kwaitana, Maya Jane Bates, Esnath Msowoya, Dorothee van Breevoort, Thomas Mildestvedt, Eivind Meland, Eric Umar
+        Abstract: BACKGROUND:
+        The global population is undergoing a significant surge in aging leading to increased susceptibility to various forms of progressive illnesses. This phenomenon significantly impacts both individual health and healthcare systems. Low and Middle Income Countries face particular challenges, as their Primary Health Care (PHC) settings often lack the necessary human and material resources to effectively address the escalating healthcare demands of the older people. This study set out to explore the experiences of older people living with progressive multimorbidity in accessing PHC services in Malawi.METHODS:
+        Between July 2022 and January 2023, a total of sixty in-depth interviews were conducted with dyads of individuals aged ≥ 50 years and their caregivers, and twelve healthcare workers in three public hospitals across Malawi's three administrative regions. The study employed a stratified selection of sites, ensuring representation from rural, peri-urban, and urban settings, allowing for a comprehensive comparison of diverse perspectives. Guided by the Andersen-Newman theoretical framework, the study assessed the barriers, facilitators, and need factors influencing PHC service access and utilization by the older people.RESULTS:
+        Three themes, consistent across all sites emerged, encompassing barriers, facilitators, and need factors respectively. The themes include: (1) clinic environment: inconvenient clinic setup, reliable PHC services and research on diabetic foods; (2) geographical factors: available means of transportation, bad road conditions, lack of comprehensive PHC services at local health facility and need for community approaches; and (3) social and personal factors: encompassing use of alternative medicine, perceived health care benefit and support with startup capital for small-scale businesses.CONCLUSION:
+        This research highlights the impact of various factors on older people's access to and use of PHC services. A comprehensive understanding of the barriers, facilitators, and specific needs of older people is essential for developing tailored services that effectively address their unique challenges and preferences. The study underscores the necessity of community-based approaches to improve PHC access for this demographic. Engaging multiple stakeholders is important to tackle the diverse challenges, enhance PHC services at all levels, and facilitate access for older people living with progressive multimorbidity.
+    Output:
+        JSON ACCORDING TO PROVIDED SCHEMA:
+        {
+            "hasResults": false,
+            "reason": "The publication is for a trial on individuals aged >50 years, while the registration is on a trial for children aged 6-10. The intervention does not match between registration and publication."
+        }
+    Comment: 
+        While the reason may be improved, the judgment here is correct. The registration is for a completely different trial than the publication. The age group is different, the enrollment is different, the intervention is different.
+
+Example 3:
+    Input:
+        REGISTRATION:
+        Brief Title: Caesarean Delivery With or Without an Indwelling Bladder Catheter. A Randomised Trial.
+        Official Title: Caesarean Delivery With or Without an Indwelling Bladder Catheter.
+        Organization: University of Aarhus
+        NCTID: NCT03479931
+        Study Type: INTERVENTIONAL
+        Summary: The aim of this study is to compare the incidence of catheter associated culture-based urinary tract infection (UTI) after elective CD with or without preoperative placement of a urinary catheter.
+        Description: Protokol version 1_01062017 Scientific protocol Caesarean delivery with or without an indwelling bladder catheter. A randomised trial.
+        Background In 2015, approximately 20% of all pregnant women gave birth by caesarean delivery (CD) in Denmark.
+        Preoperative preparations for CD include the placement of an indwelling urinary catheter. The rationale behind the procedure is to decrease the risk of surgical injury to a distended bladder and to avoid postoperative urinary retention, but the scientific evidence of the benefit to these matters is not compelling(1). On the other hand, the placement of an indwelling urinary catheter poses a considerable risk of urinary tract infection (UTI) (2), besides the costs associated with delayed ambulation, prolonged hospital stay and catheter associated discomfort to the woman (3, 4) A Cochrane review (1) on indwelling bladder catheter versus no catheter inserted at CD, found that indwelling bladder catheterization was associated with longer time to first spontaneous voiding and more pain/discomfort due to catheterization and/or with first voiding. Furthermore, the women with an indwelling catheter had longer time to ambulation and longer hospital stay. None of the included studies (n=3) in the review reported on bladder injury nor the prespecified criteria for diagnosing UTI and thus no result on UTI as a primary outcome could be obtained. In addition, none of the randomized trials on CD with or without an indwelling bladder catheter were carried out in countries with peri-operative procedures and handling of patients similar to those in Europe.
+        In a prospective clinical study (5), there were no bladder injuries in 344 women undergoing elective CD without a catheter. UTI was significantly more prevalent in the catheterized group (6%) than in the non-catheterized group (0.58%), P\<0.05). In retrospective studies on women undergoing CD with an indwelling catheter, the overall prevalence of bladder injuries is found to be around 0.3%(6, 7).
+        The aim of this study is to compare the incidence of catheter associated culture- based urinary tract infection (UTI) after elective CD with or without preoperative placement of a urinary catheter.
+        Statistics Sample size: A power calculation was performed based on a 5.7% incidence of UTI in the catheter group and 0.5% in the non-catheter group(4). With an alpha of 0.05 and a power of 80%, a total of 400 women would have to be included to detect a significant difference in the primary outcome.
+        The association between the placement of an indwelling urinary catheter during caesarean delivery and the outcomes of interest will be explored using an Intention-to-treat (ITT) analysis. The investigators will perform comparative analyses using multivariate logistic regression with calculation of Odds Ratios with 95% confidence intervals with adjustments for significant differences in baseline characteristics. Subgroup analyses will be performed according to the number of previous CDs No interim analysis will be performed. A local trial steering committee will be appointed.
+        Side effects, risks, and inconveniences for the project participants
+        Any inconveniences for the women in the study with providing an extra urinary sample for bacterial culture are very small. Women in the indwelling catheter group receive current standard treatment. Women without a catheter may have an increased risk of:
+        1. Urinary retention; a known side effect to surgical procedures and regional anaesthesia (9, 10). The women without an indwelling catheter might have a slightly increased risk of urinary retention, but with our postoperative surveillance all cases will be detected and treated in both groups of women.
+        2. Intraoperative bladder injury; the overall risk is very low (0.3%). In women suspected of peri-operative bladder injury, both with or without an indwelling catheter, methylene blue will be installed into the bladder through an indwelling catheter, which will serve to identify the leak. In case of accidental bladder puncture, surgical repair will be performed immediately.
+        On the other hand, women without a catheter may have a decreased risk of
+        1. Urinary tract infection
+        2. Delayed ambulation
+        3. Prolonged hospitalization
+        7. Biological material Urinary samples are collected from the study participants, for both urine dipstick analysis and for urine culture. After obtaining results from the urine culture, it will be destroyed. This is standard procedure at the Department of Microbiology.
+        Information from patient records The participants' medical records are accessed for information on the predefined outcomes; urine test results, any voiding difficulties after CD and catheter removal, information on the surgery, time to ambulation, length of hospital stay, any sign or symptoms of an infection or fever during hospital stay and if there has been any contact to our department after discharge.
+        Legal considerations The project will be reported to the Danish Data Protection Agency through the joint notifications, Region Midtjylland. The information collected from the project participants will be protected according to Danish law (Lov om behandling af personoplysninger and Sundhedsloven).
+        Basic information (name, contact information, social security number, previous medical and pregnancy history) is provided by the participants upon inclusion.
+        Financial compensation The project participants will not receive financial compensation for their participation.
+        Participant information and inclusion Contact to potential participants is established at a joint information meeting for women booked for planned CD, where verbal and written information about the project will be provided, by a project assistant or a midwife from the delivery ward. Both the assistant and midwife are informed and taught personally by the trial doctor. Thus, women will have the opportunity for reflection at least 4 days before making any decision. Furthermore, the women are offered extended verbal information at the delivery ward, where they are welcome to bring an assessor.
+        In any need of further information, the women will be given contact information on key persons responsible for the project.
+        All study participants give oral and written consent at the day of the CD, after at least 4 days of consideration in accordance with the Declaration of Helsinki and Central Denmark Research Ethics Committee.
+        The women are informed that their consent can be withdrawn at any time.
+        Publication of project results Both positive, negative, and inconclusive results will be published in international peer-reviewed journals and at the website of the Regional Hospital of Randers.
+        Ethical considerations With this study the investigators hope to evaluate the possible benefits of caesarean delivery without routine placement of an indwelling catheter in order to improve the course for women with a future CD.
+        The investigators do think that the possible knowledge gained from the project will exceed any possible disadvantages experienced by the individual study participants.
+        Information on patient compensation The Patient Compensation Association covers the trial.
+        -----
+
+        PUBLICATION:
+        Title: Indwelling bladder catheterisation as part of intraoperative and postoperative care for caesarean section.
+        Author: Hany Abdel-Aleem, Mohamad Fathallah Aboelnasr, Tameem M Jayousi, Fawzia A Habib
+        Abstract: BACKGROUND:
+        Caesarean section (CS) is the most common obstetric surgical procedure, with more than one-third of pregnant women having lower-segment CS. Bladder evacuation is carried out as a preoperative procedure prior to CS. Emerging evidence suggests that omitting the use of urinary catheters during and after CS could reduce the associated increased risk of urinary tract infections (UTIs), catheter-associated pain/discomfort to the woman, and could lead to earlier ambulation and a shorter stay in hospital.OBJECTIVES:
+        To assess the effectiveness and safety of indwelling bladder catheterisation for intraoperative and postoperative care in women undergoing CS.SEARCH METHODS:
+        We searched the Cochrane Pregnancy and Childbirth Group's Trials Register (31 December 2013) and reference lists of retrieved studies.SELECTION CRITERIA:
+        Randomised controlled trials (RCTs) comparing indwelling bladder catheter versus no catheter or bladder drainage in women undergoing CS (planned or emergency), regardless of the type of anaesthesia used. Quasi-randomised trials, cluster-randomised trials were not eligible for inclusion. Studies presented as abstracts were eligible for inclusion providing there was sufficient information to assess the study design and outcomes.DATA COLLECTION AND ANALYSIS:
+        Two review authors independently assessed studies for eligibility and trial quality, and extracted data. Data were checked for accuracy.MAIN RESULTS:
+        The search retrieved 16 studies (from 17 reports). Ten studies were excluded and one study is awaiting assessment. We included five studies involving 1065 women (1090 recruited). The five included studies were at moderate risk of bias.Data relating to one of our primary outcomes (UTI) was reported in four studies but did not meet our definition of UTI (as prespecified in our protocol). The included studies did not report on our other primary outcome - intraoperative bladder injury (this outcome was not prespecified in our protocol). Two secondary outcomes were not reported in the included studies: need for postoperative analgesia and women's satisfaction. The included studies did provide limited data relating to this review's secondary outcomes. Indwelling bladder catheter versus no catheter - three studies (840 women) Indwelling bladder catheterisation was associated with a reduced incidence of bladder distension (non-prespecified outcome) at the end of the operation (risk ratio (RR) 0.02, 95% confidence interval (CI) 0.00 to 0.35; one study, 420 women) and fewer cases of retention of urine (RR 0.06, 95% CI 0.01 to 0.47; two studies, 420 women) or need for catheterisation (RR 0.03, 95% CI 0.01 to 0.16; three studies 840 participants). In contrast, indwelling bladder catheterisation was associated with a longer time to first voiding (mean difference (MD) 16.81 hours, 95% CI 16.32 to 17.30; one study, 420 women) and more pain or discomfort due to catheterisation (and/or at first voiding) (average RR 10.47, 95% CI 4.71 to 23.25, two studies, 420 women) although high levels of heterogeneity were observed. Similarly, compared to women in the 'no catheter' group, indwelling bladder catheterisation was associated with a longer time to ambulation (MD 4.34 hours, 95% CI 1.37 to 7.31, three studies, 840 women) and a longer stay in hospital (MD 0.62 days, 95% CI 0.15 to 1.10, three studies, 840 women). However, high levels of heterogeneity were observed for these two outcomes and the results should be interpreted with caution.There was no difference in postpartum haemorrhage (PPH) due to uterine atony. There was also no difference in the incidence of UTI (as defined by trialists) between the indwelling bladder catheterisation and no catheterisation groups (two studies, 570 women). However, high levels of heterogeneity were observed for this non-prespecified outcome and results should be considered in this context. Indwelling bladder catheter versus bladder drainage - two studies (225 women)Two studies (225 women) compared the use of an indwelling bladder catheter versus bladder drainage. There was no difference between groups in terms of retention of urine following CS, length of hospital stay or the non-prespecified outcome of UTI (as defined by the trialist).There is some evidence (from one small study involving 50 women), that the need for catheterisation was reduced in the group of women with an indwelling bladder catheter (RR 0.04, 95% CI 0.00 to 0.70) compared to women in the bladder drainage group. Evidence from another small study (involving 175 women) suggests that women who had an indwelling bladder catheter had a longer time to ambulation (MD 0.90, 95% CI 0.25 to 1.55) compared to women who received bladder drainage.AUTHORS' CONCLUSIONS:
+        This review includes limited evidence from five RCTs of moderate quality. The review's primary outcomes (bladder injury during operation and UTI), were either not reported or reported in a way not suitable for our analysis. The evidence in this review is based on some secondary outcomes, with heterogeneity present in some of the analyses. There is insufficient evidence to assess the routine use of indwelling bladder catheters in women undergoing CS. There is a need for more rigorous RCTs, with adequate sample sizes, standardised criteria for the diagnosis of UTI and other common outcomes.
+    Output:
+        JSON ACCORDING TO PROVIDED SCHEMA:
+        {
+            "hasResults": false,
+            "reason": "The publication is that of a meta-analysis or systematic review on the subject. Only results in publications specifically relating to the trial registration should be counted as having results."
+        }
+    Comments: 
+        This is a good example because it correctly identfies the publication as a meta-analysis or systematic review. Such publications should not be counted as having results (even if results of the trial may potentially be located inside).
+
