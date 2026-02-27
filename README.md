@@ -2,9 +2,7 @@
 
 Automated tool for discovering publications linked to clinical trial registrations and detecting whether they contain trial results, using large language models.
 
-Developed as part of a Master's thesis at Karolinska Institutet by Love Ahnström.
-
-> **Thesis:** [Automated Detection of Clinical Trial Results Reporting Using Large Language Models](https://example.com) *(link pending)*
+Developed at Karolinska Institutet by Love Ahnström.
 
 ## Overview
 
@@ -27,7 +25,7 @@ Trial ID → Registry fetch → Publication discovery (6 strategies) → Dedupli
 │   ├── config/        # Configuration (batch/live modes)
 │   ├── prompts/       # LLM prompt templates
 │   └── data/          # Input data files
-├── analysis/          # R statistical analysis for the thesis
+├── analysis/          # R statistical analysis
 │   ├── code/          # R scripts (run in order 0 → 1 → 1b → 2a → 2b → 2c → 2d)
 │   ├── data/          # Datasets
 │   └── out/           # Figures and result tables
@@ -70,12 +68,3 @@ See [tool/README.md](tool/README.md) for detailed usage and [analysis/README.md]
 ## License
 
 MIT
-
-## Citation
-
-If you use TrialScout in your research, please cite:
-
-```
-Ahnström, L. (2026). Automated Detection of Clinical Trial Results Reporting
-Using Large Language Models. Master's thesis, Karolinska Institutet.
-```

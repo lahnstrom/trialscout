@@ -1,6 +1,6 @@
 # TrialScout — Statistical Analysis
 
-R scripts for the statistical analysis in the thesis. Produces all figures and tables for the paper.
+R scripts for the statistical analysis. Produces all figures and tables for the paper.
 
 ## Prerequisites
 
@@ -22,7 +22,7 @@ Run scripts in this order (each depends on outputs of previous scripts):
 | Script | Purpose |
 |--------|---------|
 | `0-validation-dataset-all-registries.R` | Combine IntoValue + Nordic datasets into validation ground truth |
-| `1-processing_ctgov.R` | Filter interventional studies from ClinicalTrials.gov, sample ~4,700 trials |
+| `1-processing_ctgov.R` | Filter interventional studies from ClinicalTrials.gov, sample 9,600 trials |
 | `1b-patching_sponsors.R` | Enrich sample with sponsor/funder classification |
 | `2a-flowcharts.R` | Generate inclusion/exclusion flowcharts (EN + SWE) |
 | `2b-tool_perf_all_registries.R` | Confusion matrix, sensitivity, specificity, F1, error analysis |
@@ -39,17 +39,16 @@ All scripts use `set.seed(42)` for reproducibility.
 |------|------|---------|-------------|
 | `data/iv_main_dataset.csv` | 1.3 MB | Script 0 | IntoValue ground truth dataset |
 | `data/nordic_dataset.csv` | 1.5 MB | Script 0 | Nordic ground truth dataset |
-| `data/finalSample.rda` | 6.5 MB | Scripts 1b, 2c, 2d | Pre-computed sample (~4,700 trials) |
+| `data/finalSample.rda` | 6.5 MB | Scripts 1b, 2c, 2d | Pre-computed sample (9,600 trials) |
 | `data/validation_run_all_registries_reasoning_2026_01_03.csv` | <1 MB | Script 2b | Validation run output |
 | `data/response_time.csv` | <1 MB | Script 2b | Processing time data |
 | `data/results-final-run.csv` | 6.5 MB | Script 2c | Main tool output for analysis |
-| `data/random_sample_1_publications.csv` | <1 MB | Script 2c | Publication details for sampling |
 
 ### Not included (too large)
 
 | File | Size | Used by | How to obtain |
 |------|------|---------|---------------|
-| ClinicalTrials.gov bulk export | ~1.4 GB | Script 1 | Download from [ClinicalTrials.gov](https://clinicaltrials.gov/search?aggFilters=status:com ter&downloadFormat=csv). The study used the October 24, 2024 snapshot. |
+| ClinicalTrials.gov bulk export | ~1.4 GB | Script 1 | Download from [ClinicalTrials.gov](https://clinicaltrials.gov/search?aggFilters=status:com ter&downloadFormat=csv). |
 
 Since the CTGov bulk export is not included, `finalSample.rda` is provided as a pre-computed output of Script 1 so that scripts 1b onward can run without it.
 
