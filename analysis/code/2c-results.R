@@ -80,7 +80,7 @@ merged_trials <- merged_trials %>%
 merged_trials <- merged_trials %>%
   mutate(
     pubmed_naive = grepl("pubmed_naive", x = tool_ident_steps),
-    pubmed_enhanced = grepl("pubmed_enhanced", x = tool_ident_steps),
+    pubmed_enhanced = grepl("pubmed_gpt", x = tool_ident_steps),
     linked_at_registration = grepl("linked_at_registration", x = tool_ident_steps),
     google_scholar = grepl("google_scholar", x = tool_ident_steps),
     nct_match = grepl("nct_match", x = tool_ident_steps),
@@ -765,3 +765,4 @@ cat("Exported Table 3 with", nrow(table3_df), "rows to ./out/2c_table3_subgroups
 table4_df <- do.call(rbind, table4_rows)
 write.csv(table4_df, "./out/2c_table4_strategies.csv", row.names = FALSE)
 cat("Exported Table 4 with", nrow(table4_df), "rows to ./out/2c_table4_strategies.csv\n")
+

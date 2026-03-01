@@ -1,7 +1,7 @@
 "strategy","n_candidates","pct_candidates","n_results","pct_results","pct_result_per_candidate"
-"Predefined PubMed search query",17802,38.7,3582,40.8,20.1
-"LLM-constructed PubMed search query",10099,21.9,3141,35.8,31.1
-"Linked to from trial registration",4668,10.1,3721,42.4,79.7
-"NCT-ID-search in Google Scholar",23472,51,6549,74.6,27.9
-"NCT-ID-search in offline PubMed database",5645,12.3,4164,47.4,73.8
-"All",46038,100,8777,100,19.1
+"Predefined PubMed search query",21154,16.9,3247,28.8,15.3
+"LLM-constructed PubMed search query",93419,74.4,8698,77.3,9.3
+"Linked to from trial registration",7430,5.9,5366,47.7,72.2
+"NCT-ID-search in Google Scholar",22647,18,6733,59.8,29.7
+"NCT-ID-search in offline PubMed database",0,0,0,0,NA
+"All",125528,100,11256,100,9
