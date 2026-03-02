@@ -451,12 +451,12 @@ summary_data <- merged_trials_year %>%
     .groups = "drop"
   )
 
-underlying_data_plot_year <- ggplot(summary_data, aes(x = completion_year, y = proportion)) +
+underlying_data_plot_year <- ggplot(summary_data, aes(x = completion_year, y = proportion * 100)) +
   geom_point(aes(size = trial_count), color = "steelblue", alpha = 0.7) +
   my_theme +
   labs(
     x = "Completion Year",
-    y = "Proportion with\nPublished results",
+    y = "Percentage with\nPublished Results (%)",
     size = "Number of Trials"
   ) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
