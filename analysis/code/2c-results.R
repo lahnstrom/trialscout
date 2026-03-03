@@ -147,27 +147,40 @@ add_result("venn", "n_neither", n_neither,
 fit <- euler(c(
   "Published results" = n_published_only,
   "Summary results" = n_summary_only,
+  "No results" = n_neither,
   "Published results&Summary results" = n_both
 ))
 
-pdf("./out/figures/2c_venn_published_summary.pdf", width = 8, height = 6)
+pdf("./out/figures/2c_venn_published_summary.pdf", width = 10, height = 8)
 print(plot(fit,
      quantities = list(labels = c(format(n_published_only, big.mark = ","),
                                   format(n_summary_only, big.mark = ","),
+                                  format(n_neither, big.mark = ","),
                                   format(n_both, big.mark = ",")),
-                       fontsize = 16),
-     labels = FALSE,
-     fills = list(fill = c("#4A90D9", "#D94A4A"), alpha = 0.5)))
+                       fontsize = 13),
+     labels = list(labels = c("Published results", "Summary\nresults", "No results"),
+                   fontsize = 14, fontface = "bold"),
+     fills = list(fill = c("#4A90D9", "#D94A4A", "#999999"), alpha = 0.5),
+     padding = unit(25, "mm")))
+# Add "Reported results" bracket label spanning both result circles
+centers <- fit$ellipses
+pub_left  <- centers["Published results", "h"] - centers["Published results", "a"]
+sum_right <- centers["Summary results", "h"] + centers["Summary results", "a"]
+bracket_y <- centers["Published results", "k"] + centers["Published results", "a"] + 3
 seekViewport("panel.vp.1.1")
-grid.text("Published results",
-          x = unit(-32.5, "native"), y = unit(8, "native"),
-          gp = gpar(fontsize = 18, fontface = "bold"))
+grid.lines(x = unit(c(pub_left, sum_right), "native"),
+           y = unit(c(bracket_y, bracket_y), "native"),
+           gp = gpar(lwd = 2))
+grid.lines(x = unit(c(pub_left, pub_left), "native"),
+           y = unit(c(bracket_y, bracket_y - 3), "native"),
+           gp = gpar(lwd = 2))
+grid.lines(x = unit(c(sum_right, sum_right), "native"),
+           y = unit(c(bracket_y, bracket_y - 3), "native"),
+           gp = gpar(lwd = 2))
 grid.text("Reported results",
-          x = unit(11.6, "native"), y = unit(8, "native"),
-          gp = gpar(fontsize = 18, fontface = "bold"))
-grid.text("Summary\nresults",
-          x = unit(39.5, "native"), y = unit(8, "native"),
-          gp = gpar(fontsize = 16, fontface = "bold"))
+          x = unit(mean(c(pub_left, sum_right)), "native"),
+          y = unit(bracket_y + 6, "native"),
+          gp = gpar(fontsize = 14, fontface = "bold"))
 upViewport()
 dev.off()
 
@@ -352,22 +365,20 @@ proportions <- merged_trials_enrolment_non_na %>%
     )
   )
 
-plot_enrolment_deciles <- ggplot(proportions, aes(x = reorder(label, decile), y = proportion)) +
+plot_enrolment_deciles <- ggplot(proportions, aes(x = reorder(label, decile), y = proportion * 100)) +
   geom_bar(stat = "identity", fill = "steelblue") +
   scale_y_continuous(
-    labels = scales::percent,
-    limits = c(0, 1)
+    labels = function(x) paste0(x, "%"),
+    limits = c(0, 100)
   ) +
   labs(
     x = "Enrolment (n)",
-    y = "Proportion with Reported Results"
+    y = "Percentage with\nReported Results (%)"
   ) +
-  theme_minimal() +
-  theme(
-    axis.text.x = element_text(angle = 0)
-  )
+  my_theme +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
-ggsave("./out/figures/2c_enrollment_deciles.pdf", plot = plot_enrolment_deciles, device = "pdf", width = 8, height = 6)
+ggsave("./out/figures/2c_enrollment_deciles.pdf", plot = plot_enrolment_deciles, device = "pdf", width = 10, height = 6)
 
 # ===== 6. LOGISTIC REGRESSION: COMPLETION YEAR =====
 
@@ -453,13 +464,17 @@ summary_data <- merged_trials_year %>%
 
 underlying_data_plot_year <- ggplot(summary_data, aes(x = completion_year, y = proportion * 100)) +
   geom_point(aes(size = trial_count), color = "steelblue", alpha = 0.7) +
+  scale_y_continuous(
+    labels = function(x) paste0(x, "%"),
+    limits = c(0, 100)
+  ) +
   my_theme +
   labs(
     x = "Completion Year",
     y = "Percentage with\nPublished Results (%)",
     size = "Number of Trials"
   ) +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  theme(axis.text.x = element_text(angle = 0))
 print(underlying_data_plot_year)
 ggsave("./out/figures/2c_completion_year_scatter.pdf", plot = underlying_data_plot_year, device = "pdf", width = 10, height = 6)
 
