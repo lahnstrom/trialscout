@@ -152,6 +152,10 @@ export async function publicationDiscovery(
 ) {
   const registration = fetchRegistrationLiveCache(trialId);
 
+  if (!registration) {
+    return [[], [{ fn: "publicationDiscovery", error: `No registration data found for ${trialId}` }]];
+  }
+
   // Use provided strategies or default to live config
   const effectiveStrategies = strategies || config.get("live.strategies");
 

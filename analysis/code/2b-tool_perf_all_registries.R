@@ -376,11 +376,12 @@ fn_ava  <- read_excel(ava_file, sheet = "FALSE NEGATIVES")
 fp_love <- read_excel(love_file, sheet = "FALSE POSITIVES")
 fn_love <- read_excel(love_file, sheet = "FALSE NEGATIVES")
 
-# Clean Ava's FN: convert literal "NA" strings to actual NA, then coerce to logical
+# Clean Ava's FN: convert literal "NA" strings to TRUE (inaccessible pubs), then coerce to logical
 fn_ava <- fn_ava %>%
   mutate(has_results_reviewer_2 = case_when(
     has_results_reviewer_2 == "TRUE"  ~ TRUE,
     has_results_reviewer_2 == "FALSE" ~ FALSE,
+    has_results_reviewer_2 == "NA"    ~ TRUE,
     TRUE ~ NA
   ))
 
