@@ -125,3 +125,7 @@
 "manual_review","fn_reclass_rate_r1","30","30/100 (30.0%)"
 "manual_review","fn_reclass_rate_r2","56","56/100 (56.0%)"
 "manual_review","fn_reclass_rate_consensus","39.7","27/68 (39.7%)"
+"manual_review","fp_final_reviewed","100","100"
+"manual_review","fp_reclass_rate_final","79","79/100 (79.0%)"
+"manual_review","fn_final_reviewed","100","100"
+"manual_review","fn_reclass_rate_final","44","44/100 (44.0%)"

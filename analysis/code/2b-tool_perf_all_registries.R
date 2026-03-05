@@ -425,6 +425,22 @@ write_xlsx(
 )
 cat("Exported merged review file to ./data/FP_FN_ALL_merged_with_discrepancies.xlsx\n")
 
+# --- Step 3b: Read consensus file and build final verdict ---
+consensus_file <- "./data/FP_FN_ALL_merged_with_discrepancies_CONSENSUS.xlsx"
+fp_consensus_df <- read_excel(consensus_file, sheet = "False_Positives")
+fn_consensus_df <- read_excel(consensus_file, sheet = "False_Negatives")
+
+# has_results_final: use consensus where available, else fall back to reviewer 1
+fp_consensus_df <- fp_consensus_df %>%
+  mutate(has_results_final = ifelse(!is.na(has_results_consensus),
+                                    has_results_consensus,
+                                    has_results_reviewer_1))
+
+fn_consensus_df <- fn_consensus_df %>%
+  mutate(has_results_final = ifelse(!is.na(has_results_consensus),
+                                    has_results_consensus,
+                                    has_results_reviewer_1))
+
 # --- Step 4: Compute reclassification proportions ---
 # FP: reviewer says TRUE  → tool was correct → reclassify as TP
 # FN: reviewer says FALSE → tool was correct → reclassify as TN
@@ -499,6 +515,28 @@ add_result("manual_review", "fn_reclass_rate_consensus",
            ifelse(is.na(fn_rate_consensus), "NA",
                   sprintf("%d/%d (%.1f%%)", fn_reclass_consensus, nrow(fn_consensus), fn_rate_consensus * 100)))
 
+# -- Final consensus reclassification (using consensus file) --
+fp_final_reviewed <- fp_consensus_df %>% filter(!is.na(has_results_final))
+fn_final_reviewed <- fn_consensus_df %>% filter(!is.na(has_results_final))
+
+fp_reclass_final <- sum(fp_final_reviewed$has_results_final == TRUE)
+fn_reclass_final <- sum(fn_final_reviewed$has_results_final == FALSE)
+
+fp_rate_final <- if (nrow(fp_final_reviewed) > 0) fp_reclass_final / nrow(fp_final_reviewed) else NA
+fn_rate_final <- if (nrow(fn_final_reviewed) > 0) fn_reclass_final / nrow(fn_final_reviewed) else NA
+
+add_result("manual_review", "fp_final_reviewed", nrow(fp_final_reviewed), as.character(nrow(fp_final_reviewed)))
+add_result("manual_review", "fp_reclass_rate_final",
+           ifelse(is.na(fp_rate_final), NA, round(fp_rate_final * 100, 1)),
+           ifelse(is.na(fp_rate_final), "NA",
+                  sprintf("%d/%d (%.1f%%)", fp_reclass_final, nrow(fp_final_reviewed), fp_rate_final * 100)))
+
+add_result("manual_review", "fn_final_reviewed", nrow(fn_final_reviewed), as.character(nrow(fn_final_reviewed)))
+add_result("manual_review", "fn_reclass_rate_final",
+           ifelse(is.na(fn_rate_final), NA, round(fn_rate_final * 100, 1)),
+           ifelse(is.na(fn_rate_final), "NA",
+                  sprintf("%d/%d (%.1f%%)", fn_reclass_final, nrow(fn_final_reviewed), fn_rate_final * 100)))
+
 # --- Step 5: Print summary ---
 cat("\n===== MANUAL REVIEW SUMMARY =====\n")
 
@@ -514,6 +552,10 @@ cat("Reclassified as TP (R2):       ", fp_reclass_r2, "/", nrow(fp_reviewed_r2),
     sprintf("(%.1f%%)\n", fp_rate_r2 * 100))
 cat("Reclassified as TP (consensus):", fp_reclass_consensus, "/", nrow(fp_consensus),
     sprintf("(%.1f%%)\n", fp_rate_consensus * 100))
+if (!is.na(fp_rate_final)) {
+  cat("Reclassified as TP (final):    ", fp_reclass_final, "/", nrow(fp_final_reviewed),
+      sprintf("(%.1f%%)\n", fp_rate_final * 100))
+}
 
 cat("\n-- False Negatives --\n")
 cat("Reviewed by Reviewer 1 (Love):", nrow(fn_reviewed_r1), "/", nrow(fn_merged), "\n")
@@ -534,6 +576,10 @@ if (!is.na(fn_rate_r2)) {
 if (!is.na(fn_rate_consensus)) {
   cat("Reclassified as TN (consensus):", fn_reclass_consensus, "/", nrow(fn_consensus),
       sprintf("(%.1f%%)\n", fn_rate_consensus * 100))
+}
+if (!is.na(fn_rate_final)) {
+  cat("Reclassified as TN (final):    ", fn_reclass_final, "/", nrow(fn_final_reviewed),
+      sprintf("(%.1f%%)\n", fn_rate_final * 100))
 }
 
 cat("\n=================================\n")
