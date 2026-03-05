@@ -1,6 +1,10 @@
 import fs from "fs";
 import config from "config";
 
+if (!fs.existsSync("./cache")) {
+  fs.mkdirSync("./cache", { recursive: true });
+}
+
 /**
  * Cache metadata structure:
  * {

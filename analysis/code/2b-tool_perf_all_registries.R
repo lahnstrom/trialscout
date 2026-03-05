@@ -537,6 +537,38 @@ add_result("manual_review", "fn_reclass_rate_final",
            ifelse(is.na(fn_rate_final), "NA",
                   sprintf("%d/%d (%.1f%%)", fn_reclass_final, nrow(fn_final_reviewed), fn_rate_final * 100)))
 
+# -- FN publication discovery analysis (confirmed FN only) --
+# Did the tool even find the correct publication among the PMIDs it prompted?
+# Only analyze confirmed FN (has_results_final == TRUE), excluding reclassified TN
+fn_confirmed <- fn_final_reviewed %>% filter(has_results_final == TRUE)
+
+fn_confirmed <- fn_confirmed %>%
+  mutate(
+    pub_pmid_clean = ifelse(publication_pmid == "NA", NA_character_, publication_pmid),
+    tool_found_pub = case_when(
+      is.na(pub_pmid_clean) ~ FALSE,
+      is.na(tool_prompted_pmids) ~ FALSE,
+      str_detect(tool_prompted_pmids, fixed(pub_pmid_clean)) ~ TRUE,
+      TRUE ~ FALSE
+    )
+  )
+
+fn_tool_found     <- sum(fn_confirmed$tool_found_pub)
+fn_tool_not_found <- sum(!fn_confirmed$tool_found_pub)
+fn_no_pmid        <- sum(is.na(fn_confirmed$pub_pmid_clean))
+fn_pmid_missed    <- sum(!is.na(fn_confirmed$pub_pmid_clean) & !fn_confirmed$tool_found_pub)
+
+add_result("manual_review", "fn_tool_found_pub", fn_tool_found,
+           sprintf("%d/%d (%.1f%%)", fn_tool_found, nrow(fn_confirmed),
+                   fn_tool_found / nrow(fn_confirmed) * 100))
+add_result("manual_review", "fn_tool_not_found_pub", fn_tool_not_found,
+           sprintf("%d/%d (%.1f%%)", fn_tool_not_found, nrow(fn_confirmed),
+                   fn_tool_not_found / nrow(fn_confirmed) * 100))
+add_result("manual_review", "fn_no_known_pmid", fn_no_pmid,
+           sprintf("%d/%d", fn_no_pmid, nrow(fn_confirmed)))
+add_result("manual_review", "fn_known_pmid_missed", fn_pmid_missed,
+           sprintf("%d/%d", fn_pmid_missed, nrow(fn_confirmed)))
+
 # --- Step 5: Print summary ---
 cat("\n===== MANUAL REVIEW SUMMARY =====\n")
 
@@ -581,6 +613,13 @@ if (!is.na(fn_rate_final)) {
   cat("Reclassified as TN (final):    ", fn_reclass_final, "/", nrow(fn_final_reviewed),
       sprintf("(%.1f%%)\n", fn_rate_final * 100))
 }
+cat("\nPublication discovery breakdown (confirmed FN only, n=", nrow(fn_confirmed), "):\n", sep = "")
+cat("  Tool found correct pub:      ", fn_tool_found, "/", nrow(fn_confirmed),
+    sprintf("(%.1f%%)\n", fn_tool_found / nrow(fn_confirmed) * 100))
+cat("  Tool did NOT find correct pub:", fn_tool_not_found, "/", nrow(fn_confirmed),
+    sprintf("(%.1f%%)\n", fn_tool_not_found / nrow(fn_confirmed) * 100))
+cat("    - No known PMID (not in PubMed):", fn_no_pmid, "\n")
+cat("    - Known PMID but tool missed it:", fn_pmid_missed, "\n")
 
 cat("\n=================================\n")
 

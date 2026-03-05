@@ -129,3 +129,7 @@
 "manual_review","fp_reclass_rate_final","79","79/100 (79.0%)"
 "manual_review","fn_final_reviewed","100","100"
 "manual_review","fn_reclass_rate_final","44","44/100 (44.0%)"
+"manual_review","fn_tool_found_pub","5","5/56 (8.9%)"
+"manual_review","fn_tool_not_found_pub","51","51/56 (91.1%)"
+"manual_review","fn_no_known_pmid","25","25/56"
+"manual_review","fn_known_pmid_missed","26","26/56"

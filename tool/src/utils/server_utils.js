@@ -1,4 +1,17 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
+
+const CACHE_DIRS = [
+  "./request_cache/registrations",
+  "./request_cache/publications",
+  "./request_cache/results",
+];
+
+for (const dir of CACHE_DIRS) {
+  if (!existsSync(dir)) {
+    mkdirSync(dir, { recursive: true });
+  }
+}
+
 export const fetchRegistrationLiveCache = (trialId) => {
   try {
     const path = `./request_cache/registrations/${trialId}.json`;
