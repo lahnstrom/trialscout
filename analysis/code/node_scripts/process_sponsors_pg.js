@@ -11,7 +11,7 @@ const INPUT_CSV_PATH = path.join(__dirname, "final-sample-ctgov.csv");
 const OUTPUT_CSV_PATH = path.join(__dirname, "patch_file_pg.csv");
 // Database connection via env vars or defaults
 const DB_CONFIG = {
-  user: "loveahnstrom", // <-- ⚠️  REPLACE THIS
+  user: "loveahnstrom", // <-- REPLACE THIS
   host: "localhost",
   database: "local_db",
   password: null, // Should be null or undefined for no password
@@ -66,11 +66,11 @@ async function fetchCountriesForNctIds(pool, nctIds) {
  * Reads the input CSV to collect nct_ids, queries Postgres, and writes the patch CSV.
  */
 async function processFromPostgres() {
-  console.log("🔄 Connecting to Postgres...");
+  console.log("Connecting to Postgres...");
   const pool = new Pool(DB_CONFIG);
   try {
     // 1) Read all nct_ids from input CSV
-    console.log(`🔄 Reading input CSV: ${INPUT_CSV_PATH}`);
+    console.log(`Reading input CSV: ${INPUT_CSV_PATH}`);
     const nctIds = await new Promise((resolve, reject) => {
       const collected = [];
       fs.createReadStream(INPUT_CSV_PATH)
@@ -83,11 +83,11 @@ async function processFromPostgres() {
     });
 
     // 2) Query sponsors for all collected nct_ids
-    console.log(`🔎 Querying sponsors for ${nctIds.length} nct_ids...`);
+    console.log(`Querying sponsors for ${nctIds.length} nct_ids...`);
     const nctIdToSponsorRows = await fetchSponsorsForNctIds(pool, nctIds);
 
     // 3) Query countries for all collected nct_ids
-    console.log(`🔎 Querying countries for ${nctIds.length} nct_ids...`);
+    console.log(`Querying countries for ${nctIds.length} nct_ids...`);
     const nctIdToCountryRows = await fetchCountriesForNctIds(pool, nctIds);
 
     // 4) Build records
@@ -142,7 +142,7 @@ async function processFromPostgres() {
 
     await csvWriter.writeRecords(records);
     console.log("---");
-    console.log(`🎉 Success! Patch file created at: ${OUTPUT_CSV_PATH}`);
+    console.log(`Success! Patch file created at: ${OUTPUT_CSV_PATH}`);
     console.log(`Processed ${records.length} rows.`);
   } finally {
     await pool.end();
@@ -153,7 +153,7 @@ async function processFromPostgres() {
   try {
     await processFromPostgres();
   } catch (err) {
-    console.error("❌ A critical error occurred:", err);
+    console.error("A critical error occurred:", err);
     process.exit(1);
   }
 })();

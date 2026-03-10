@@ -53,6 +53,7 @@ eligible_date_n <- eligibility_year %>%
   filter(eligible_year) %>%
   pull(n)
 eligible_missing_date_n <- missing_date_n + eligible_date_n
+has_date_n <- eligible_date_n + ineligible_date_n
 excluded_random_sample_n <- eligible_date_n - sample_size
 completed_terminated_n <- study_status %>%
   filter(`Study Status` %in% c("COMPLETED", "TERMINATED")) %>%
@@ -73,6 +74,7 @@ add_result("flowchart", "eligible_date_n", eligible_date_n, format(eligible_date
 add_result("flowchart", "ineligible_date_n", ineligible_date_n, format(ineligible_date_n, big.mark = ","))
 add_result("flowchart", "missing_date_n", missing_date_n, format(missing_date_n, big.mark = ","))
 add_result("flowchart", "eligible_missing_date_n", eligible_missing_date_n, format(eligible_missing_date_n, big.mark = ","))
+add_result("flowchart", "has_date_n", has_date_n, format(has_date_n, big.mark = ","))
 add_result("flowchart", "excluded_random_sample_n", excluded_random_sample_n, format(excluded_random_sample_n, big.mark = ","))
 add_result("flowchart", "sample_size", sample_size, format(sample_size, big.mark = ","))
 
@@ -81,7 +83,7 @@ numbers_to_format <- c(
   "total_n", "observational_n", "interventional_n",
   "completed_terminated_n", "other_status_n",
   "ineligible_date_n", "missing_date_n", "eligible_date_n",
-  "eligible_missing_date_n", "excluded_random_sample_n", "sample_size"
+  "eligible_missing_date_n", "has_date_n", "excluded_random_sample_n", "sample_size"
 )
 
 for (var in numbers_to_format) {
@@ -102,11 +104,11 @@ digraph_contents <- str_glue("
   Excluded_Design [label = 'Excluded due to non-interventional design\n(n = {observational_n})' fillcolor = \"#DDEEFF\"]
   Included_Design [label = 'Trials with interventional design\n(n = {interventional_n})']
 
-  Excluded_Date [label = 'Excluded due to completion during,\nor after October 2022\n(n = {ineligible_date_n})' fillcolor = \"#DDEEFF\"]
-  Included_Date [label = 'Trials completed before October 2022,\nor with missing completion date\n(n = {eligible_missing_date_n})']
-
   Excluded_Missing_Date [label = 'Excluded due to missing completion date\n(n = {missing_date_n})' fillcolor = \"#DDEEFF\"]
-  Included_Missing_Date [label = 'Interventional trials with appropriate completion dates\n(n = {eligible_date_n})']
+  Included_With_Date [label = 'Interventional trials with specified completion date\n(n = {has_date_n})']
+
+  Excluded_Date [label = 'Excluded due to completion during\nor after October 2022\n(n = {ineligible_date_n})' fillcolor = \"#DDEEFF\"]
+  Included_Date [label = 'Trials completed before October 2022\n(n = {eligible_date_n})']
 
   Excluded_Sample [label = 'Excluded during random sampling\n(n = {excluded_random_sample_n})' fillcolor = \"#DDEEFF\"]
   Included_Sample [label = 'Final included random sample\n(n = {sample_size})']
@@ -117,21 +119,21 @@ digraph_contents_2 <-
   "
   { rank = same; Start; Excluded_Status }
   { rank = same; Included_Status; Excluded_Design }
-  { rank = same; Included_Design; Excluded_Date }
-  { rank = same; Included_Date; Excluded_Missing_Date }
-  { rank = same; Included_Missing_Date; Excluded_Sample }
+  { rank = same; Included_Design; Excluded_Missing_Date }
+  { rank = same; Included_With_Date; Excluded_Date }
+  { rank = same; Included_Date; Excluded_Sample }
   { rank = same; Included_Sample }
 
   Start -> Excluded_Status
   Start -> Included_Status
   Included_Status -> Excluded_Design
   Included_Status -> Included_Design
-  Included_Design -> Excluded_Date
-  Included_Design -> Included_Date
-  Included_Date -> Excluded_Missing_Date
-  Included_Date -> Included_Missing_Date
-  Included_Missing_Date -> Excluded_Sample
-  Included_Missing_Date -> Included_Sample"
+  Included_Design -> Excluded_Missing_Date
+  Included_Design -> Included_With_Date
+  Included_With_Date -> Excluded_Date
+  Included_With_Date -> Included_Date
+  Included_Date -> Excluded_Sample
+  Included_Date -> Included_Sample"
 
 exclusion_chart <- grViz(paste0("digraph inclusion_exclusion {", digraph_contents, digraph_contents_2, "} "))
 tmp <- DiagrammeRsvg::export_svg(exclusion_chart)
@@ -152,11 +154,11 @@ digraph_contents <- str_glue("
   Excluded_Design [label = 'Exkluderade på grund av icke-interventionell design\n(n = {observational_n})' fillcolor = \"#DDEEFF\"]
   Included_Design [label = 'Prövningar med interventioner\n(n = {interventional_n})']
 
-  Excluded_Date [label = 'Exkluderade på grund av avslutningsdatum\n efter oktober 2022\n(n = {ineligible_date_n})' fillcolor = \"#DDEEFF\"]
-  Included_Date [label = 'Prövningar avslutade innan oktober 2022,\neller utan avslutningsdatum\n(n = {eligible_missing_date_n})']
-
   Excluded_Missing_Date [label = 'Exkluderade på grund av saknat avslutningsdatum\n(n = {missing_date_n})' fillcolor = \"#DDEEFF\"]
-  Included_Missing_Date [label = 'Interventionella prövningar med giltigt avslutningsdatum\n(n = {eligible_date_n})']
+  Included_With_Date [label = 'Interventionella prövningar med angivet avslutningsdatum\n(n = {has_date_n})']
+
+  Excluded_Date [label = 'Exkluderade på grund av avslutningsdatum\nunder eller efter oktober 2022\n(n = {ineligible_date_n})' fillcolor = \"#DDEEFF\"]
+  Included_Date [label = 'Prövningar avslutade innan oktober 2022\n(n = {eligible_date_n})']
 
   Excluded_Sample [label = 'Exkluderade under slumpmässigt urval\n(n = {excluded_random_sample_n})' fillcolor = \"#DDEEFF\"]
   Included_Sample [label = 'Slutgiltigt urval\n(n = {sample_size})']
@@ -167,21 +169,21 @@ digraph_contents_2 <-
   "
   { rank = same; Start; Excluded_Status }
   { rank = same; Included_Status; Excluded_Design }
-  { rank = same; Included_Design; Excluded_Date }
-  { rank = same; Included_Date; Excluded_Missing_Date }
-  { rank = same; Included_Missing_Date; Excluded_Sample }
+  { rank = same; Included_Design; Excluded_Missing_Date }
+  { rank = same; Included_With_Date; Excluded_Date }
+  { rank = same; Included_Date; Excluded_Sample }
   { rank = same; Included_Sample }
 
   Start -> Excluded_Status
   Start -> Included_Status
   Included_Status -> Excluded_Design
   Included_Status -> Included_Design
-  Included_Design -> Excluded_Date
-  Included_Design -> Included_Date
-  Included_Date -> Excluded_Missing_Date
-  Included_Date -> Included_Missing_Date
-  Included_Missing_Date -> Excluded_Sample
-  Included_Missing_Date -> Included_Sample"
+  Included_Design -> Excluded_Missing_Date
+  Included_Design -> Included_With_Date
+  Included_With_Date -> Excluded_Date
+  Included_With_Date -> Included_Date
+  Included_Date -> Excluded_Sample
+  Included_Date -> Included_Sample"
 
 exclusion_chart <- grViz(paste0("digraph inclusion_exclusion {", digraph_contents, digraph_contents_2, "} "))
 tmp <- DiagrammeRsvg::export_svg(exclusion_chart)

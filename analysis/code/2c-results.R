@@ -55,7 +55,7 @@ my_theme_small <- theme(
 
 # ===== 1. DATA LOADING AND PRE-PROCESSING =====
 
-load("./data/finalSample.rda")
+load("./data/finalSamplePatched.rda")
 tool_results <- read.csv("./data/results-final-run.csv") %>%
   select(nct_id, starts_with("tool"))
 
@@ -598,7 +598,7 @@ add_table3_rows(chisq_status_published$summary_tbl, "Study status",
 
 # --- Study Phases ---
 df_named_missing_phase <- merged_trials %>%
-  mutate(Phases = ifelse(is.na(Phases) | Phases == "", "Missing/NA", Phases))
+  mutate(Phases = ifelse(is.na(Phases) | Phases == "", "Missing/Not applicable", Phases))
 
 chisq_phase_reported <- run_chisq_subgroup(
   df_named_missing_phase, "Phases", "tool_or_summary", "chisq_reported", "phase")
@@ -780,4 +780,131 @@ cat("Exported Table 3 with", nrow(table3_df), "rows to ./out/2c_table3_subgroups
 table4_df <- do.call(rbind, table4_rows)
 write.csv(table4_df, "./out/2c_table4_strategies.csv", row.names = FALSE)
 cat("Exported Table 4 with", nrow(table4_df), "rows to ./out/2c_table4_strategies.csv\n")
+
+# Word exports
+library(flextable)
+library(officer)
+
+# Table 3: Subgroup analyses — build formatted 2-column-style table
+# Level renaming maps
+t3_level_map <- c(
+  "COMPLETED" = "Completed", "TERMINATED" = "Terminated",
+  "EARLY_PHASE1" = "Early Phase 1", "PHASE1" = "Phase 1",
+  "PHASE1|PHASE2" = "Phase 1/Phase 2", "PHASE2" = "Phase 2",
+  "PHASE2|PHASE3" = "Phase 2/Phase 3", "PHASE3" = "Phase 3",
+  "PHASE4" = "Phase 4", "Missing/Not applicable" = "Missing/Not applicable",
+  "ALL" = "Both", "FEMALE" = "Female", "MALE" = "Male"
+)
+
+phase_order <- c("Early Phase 1", "Phase 1", "Phase 1/Phase 2", "Phase 2",
+                 "Phase 2/Phase 3", "Phase 3", "Phase 4", "Missing/Not applicable")
+sex_order <- c("Both", "Female", "Male", "Missing")
+sponsor_order <- c(
+  "Other (Universities, Organizations, Networks, Non-U.S. Governmental Agencies, Individuals)",
+  "Industry", "U.S. Federal Agency/NIH")
+
+t3_rows <- list()
+add_t3_row <- function(subgroup, reported, published, summary_res, p_val, is_header = FALSE) {
+  t3_rows[[length(t3_rows) + 1]] <<- data.frame(
+    Subgroup = subgroup, Reported = reported, Published = published,
+    Summary = summary_res, p = p_val, is_header = is_header, stringsAsFactors = FALSE)
+}
+
+process_t3_category <- function(cat_name, header_label, level_order = NULL) {
+  add_t3_row(header_label, "", "", "", "", TRUE)
+  cat_data <- table3_df %>% filter(subgroup_category == cat_name)
+
+  # Rename levels
+  cat_data <- cat_data %>% mutate(level_fmt = ifelse(
+    subgroup_level %in% names(t3_level_map), t3_level_map[subgroup_level],
+    ifelse(subgroup_level == "" | is.na(subgroup_level), "Missing", subgroup_level)))
+
+  # Reorder if specified
+  if (!is.null(level_order)) {
+    cat_data <- cat_data %>%
+      mutate(level_fmt = factor(level_fmt, levels = level_order)) %>%
+      arrange(level_fmt) %>% mutate(level_fmt = as.character(level_fmt))
+  }
+
+  for (i in seq_len(nrow(cat_data))) {
+    add_t3_row(
+      cat_data$level_fmt[i],
+      cat_data$summary_reported[i],
+      cat_data$summary_published[i],
+      cat_data$summary_summary_result[i],
+      ifelse(i == 1, cat_data$p_value[i], ""))
+  }
+}
+
+process_t3_category("Study status", "Study status")
+process_t3_category("Phase", "Phase", phase_order)
+process_t3_category("Lead Sponsor Type", "Lead Sponsor Type", sponsor_order)
+process_t3_category("Participant sex", "Participant Sex", sex_order)
+
+t3_word_data <- do.call(rbind, t3_rows)
+t3_header_indices <- which(t3_word_data$is_header)
+
+t3_ft_data <- t3_word_data %>%
+  select(Subgroup, `Trials with reported results` = Reported,
+         `Trials with published results` = Published,
+         `Trials with summary results` = Summary, p)
+
+ft3 <- flextable(t3_ft_data) %>%
+  font(fontname = "Times New Roman", part = "all") %>%
+  bold(i = t3_header_indices, j = 1) %>%
+  align(align = "left", part = "all") %>%
+  align(j = 2:5, align = "center", part = "all") %>%
+  fontsize(size = 9, part = "all") %>%
+  set_table_properties(layout = "fixed", width = 1) %>%
+  width(j = 1, width = 2.1) %>%
+  width(j = 2:4, width = 1.4) %>%
+  width(j = 5, width = 0.5)
+
+# Clear data columns for header rows
+for (r in t3_header_indices) {
+  for (col in 2:5) {
+    ft3 <- compose(ft3, i = r, j = col, value = as_paragraph(""))
+  }
+}
+
+doc3 <- read_docx() %>%
+  body_add_fpar(fpar(ftext("Table 3. Subgroup analyses for reported, published, and summary results.",
+    fp_text(font.family = "Times New Roman", bold = TRUE, font.size = 12)))) %>%
+  body_add_par("", style = "Normal") %>%
+  body_add_flextable(ft3)
+
+print(doc3, target = "./out/tables/2c_table3_subgroups.docx")
+cat("Exported Table 3 Word file to ./out/tables/2c_table3_subgroups.docx\n")
+
+# Table 4: Search strategy performance
+table4_word <- table4_df %>%
+  filter(strategy != "NCT-ID-search in offline PubMed database") %>%
+  mutate(
+    candidates_summary = sprintf("%s (%s%%)", format(n_candidates, big.mark = ","), pct_candidates),
+    results_summary = sprintf("%s (%s%%)", format(n_results, big.mark = ","), pct_results),
+    precision = paste0(pct_result_per_candidate, "%")
+  ) %>%
+  select(
+    Strategy = strategy,
+    `Candidate publications` = candidates_summary,
+    `Result publications` = results_summary,
+    `Precision` = precision
+  )
+
+ft4 <- flextable(table4_word) %>%
+  font(fontname = "Times New Roman", part = "all") %>%
+  bold(i = nrow(table4_word)) %>%
+  align(align = "left", part = "all") %>%
+  align(j = 2:4, align = "center", part = "all") %>%
+  set_table_properties(layout = "autofit", width = 1) %>%
+  autofit()
+
+doc4 <- read_docx() %>%
+  body_add_fpar(fpar(ftext("Table 4. Publication discovery strategy performance.",
+    fp_text(font.family = "Times New Roman", bold = TRUE, font.size = 12)))) %>%
+  body_add_par("", style = "Normal") %>%
+  body_add_flextable(ft4)
+
+print(doc4, target = "./out/tables/2c_table4_strategies.docx")
+cat("Exported Table 4 Word file to ./out/tables/2c_table4_strategies.docx\n")
 

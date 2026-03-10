@@ -628,3 +628,54 @@ results_df <- do.call(rbind, results)
 write.csv(results_df, "./out/2b_results_summary.csv", row.names = FALSE)
 cat("Re-exported", nrow(results_df), "results (incl. manual review) to ./out/2b_results_summary.csv\n")
 
+# ===== 8. COMBINED PERFORMANCE TABLE (WORD EXPORT) =====
+
+library(flextable)
+library(officer)
+
+perf_table_df <- do.call(rbind, perf_table_rows)
+
+# Build the transposed table: metrics as rows, registries as columns
+registry_labels <- c("all" = "All (N=5,774)",
+                     "ctgov" = "ClinicalTrials.gov (N=4,837)",
+                     "euctr" = "EUCTR (N=279)",
+                     "drks" = "DRKS (N=658)")
+
+metric_rows <- data.frame(
+  Metric = c("True positive", "False positive", "False negative", "True negative", "Sensitivity", "Specificity", "Positive predictive value", "Negative predictive value", "F-score"),
+  stringsAsFactors = FALSE
+)
+
+for (reg in c("ctgov", "euctr", "drks", "all")) {
+  row <- perf_table_df[perf_table_df$registry == reg, ]
+  metric_rows[[registry_labels[reg]]] <- c(
+    format(row$tp, big.mark = ","),
+    format(row$fp, big.mark = ","),
+    format(row$fn, big.mark = ","),
+    format(row$tn, big.mark = ","),
+    paste0(round(row$sensitivity * 100, 1), "%"),
+    paste0(round(row$specificity * 100, 1), "%"),
+    paste0(round(row$ppv * 100, 1), "%"),
+    paste0(round(row$npv * 100, 1), "%"),
+    paste0(round(row$f_score * 100, 1), "%")
+  )
+}
+
+ft <- flextable(metric_rows) %>%
+  set_header_labels(Metric = "") %>%
+  font(fontname = "Times New Roman", part = "all") %>%
+  bold(j = 1) %>%
+  align(align = "center", part = "all") %>%
+  align(j = 1, align = "left", part = "body") %>%
+  set_table_properties(layout = "autofit", width = 1) %>%
+  autofit()
+
+doc <- read_docx() %>%
+  body_add_fpar(fpar(ftext("Table 1. TrialScout validation performance by trial registry.",
+    fp_text(font.family = "Times New Roman", bold = TRUE, font.size = 12)))) %>%
+  body_add_par("", style = "Normal") %>%
+  body_add_flextable(ft)
+
+print(doc, target = "./out/tables/2b_validation_performance.docx")
+cat("Exported combined performance table to ./out/tables/2b_validation_performance.docx\n")
+

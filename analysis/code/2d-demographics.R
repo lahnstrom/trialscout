@@ -54,7 +54,7 @@ my_theme <- theme(
 
 # ===== 1. DATA LOADING =====
 
-load("./data/finalSample.rda")
+load("./data/finalSamplePatched.rda")
 total_studies <- nrow(df)
 
 add_result("sample_overview", "total_studies", total_studies,
@@ -234,3 +234,125 @@ cat("Exported", nrow(results_df), "results to ./out/2d_results_summary.csv\n")
 table2_df <- do.call(rbind, table2_rows)
 write.csv(table2_df, "./out/2d_table2_characteristics.csv", row.names = FALSE)
 cat("Exported Table 2 with", nrow(table2_df), "rows to ./out/2d_table2_characteristics.csv\n")
+
+# Word export of Table 2
+library(flextable)
+library(officer)
+
+# Build formatted 2-column table with category headers as rows
+get_cat <- function(cat_name) table2_df %>% filter(category == cat_name)
+
+word_rows <- list()
+add_word_row <- function(char, val, is_header = FALSE) {
+  word_rows[[length(word_rows) + 1]] <<- data.frame(
+    Characteristic = char, Value = val, is_header = is_header, stringsAsFactors = FALSE)
+}
+
+# Study status
+add_word_row("Study status", "", TRUE)
+status <- get_cat("Study status")
+status_map <- c("COMPLETED" = "Completed", "TERMINATED" = "Terminated")
+for (i in seq_len(nrow(status))) {
+  add_word_row(status_map[status$level[i]], status$summary[i])
+}
+
+# Phase (reorder: named phases first, Missing/Not applicable last)
+add_word_row("Phase", "", TRUE)
+phase <- get_cat("Phase")
+phase_map <- c("EARLY_PHASE1" = "Early phase 1", "PHASE1" = "Phase 1",
+               "PHASE1|PHASE2" = "Phase 1/2", "PHASE2" = "Phase 2",
+               "PHASE2|PHASE3" = "Phase 2/3", "PHASE3" = "Phase 3",
+               "PHASE4" = "Phase 4", "Missing/Not applicable" = "Missing/Not applicable")
+phase_order <- c("Early phase 1", "Phase 1", "Phase 1/2", "Phase 2",
+                 "Phase 2/3", "Phase 3", "Phase 4", "Missing/Not applicable")
+phase <- phase %>%
+  mutate(level_fmt = ifelse(level %in% names(phase_map), phase_map[level], level)) %>%
+  mutate(level_fmt = factor(level_fmt, levels = phase_order)) %>% arrange(level_fmt)
+for (i in seq_len(nrow(phase))) {
+  add_word_row(as.character(phase$level_fmt[i]), phase$summary[i])
+}
+
+# Completion Year (replace hyphen with en-dash)
+add_word_row("Completion Year", "", TRUE)
+year_data <- get_cat("Completion year")
+for (i in seq_len(nrow(year_data))) {
+  lbl <- gsub("-", "\u2013", year_data$level[i])
+  add_word_row(lbl, year_data$summary[i])
+}
+
+# Enrolled participants (empty level → Missing)
+add_word_row("Enrolled participants", "", TRUE)
+enrol <- get_cat("Enrolled participants")
+for (i in seq_len(nrow(enrol))) {
+  lbl <- ifelse(enrol$level[i] == "" | is.na(enrol$level[i]), "Missing", enrol$level[i])
+  add_word_row(lbl, enrol$summary[i])
+}
+
+# Summary results
+add_word_row("Summary results", "", TRUE)
+sumres <- get_cat("Summary results")
+sumres_map <- c("NO" = "No", "YES" = "Yes")
+for (i in seq_len(nrow(sumres))) {
+  add_word_row(sumres_map[sumres$level[i]], sumres$summary[i])
+}
+
+# Participant Sex (reorder: All, Female only, Male only, Missing)
+add_word_row("Participant Sex", "", TRUE)
+sex <- get_cat("Participant sex")
+sex_map <- c("ALL" = "All", "FEMALE" = "Female only", "MALE" = "Male only")
+sex_order <- c("All", "Female only", "Male only", "Missing")
+sex <- sex %>%
+  mutate(level_fmt = ifelse(level %in% names(sex_map), sex_map[level],
+                            ifelse(level == "" | is.na(level), "Missing", level))) %>%
+  mutate(level_fmt = factor(level_fmt, levels = sex_order)) %>% arrange(level_fmt)
+for (i in seq_len(nrow(sex))) {
+  add_word_row(as.character(sex$level_fmt[i]), sex$summary[i])
+}
+
+# Lead Sponsor Type (with footnote markers, reorder)
+add_word_row("Lead Sponsor Type", "", TRUE)
+sponsor <- get_cat("Lead sponsor type")
+sponsor <- sponsor %>% mutate(level_fmt = case_when(
+  grepl("^Other", level) ~ "Other (Universities, Organizations,\nNetworks, Non-U.S. Governmental Agencies,\nIndividuals, Unknown)\u00B9",
+  level == "U.S. Federal Agency/NIH" ~ "U.S. Federal Agency/NIH\u00B2",
+  TRUE ~ level
+))
+sponsor_order <- c(
+  "Other (Universities, Organizations,\nNetworks, Non-U.S. Governmental Agencies,\nIndividuals, Unknown)\u00B9",
+  "Industry",
+  "U.S. Federal Agency/NIH\u00B2")
+sponsor <- sponsor %>%
+  mutate(level_fmt = factor(level_fmt, levels = sponsor_order)) %>% arrange(level_fmt)
+for (i in seq_len(nrow(sponsor))) {
+  add_word_row(as.character(sponsor$level_fmt[i]), sponsor$summary[i])
+}
+
+word_data <- do.call(rbind, word_rows)
+header_indices <- which(word_data$is_header)
+
+# Build flextable with dynamic column header
+col_header <- sprintf("Number of trials (total N=%s)", format(total_studies, big.mark = ","))
+table2_ft_data <- word_data %>% select(Characteristic, Value)
+names(table2_ft_data)[2] <- col_header
+
+ft2 <- flextable(table2_ft_data) %>%
+  font(fontname = "Times New Roman", part = "all") %>%
+  bold(i = header_indices, j = 1) %>%
+  align(align = "left", part = "all") %>%
+  align(j = 2, align = "center", part = "all") %>%
+  set_table_properties(layout = "autofit", width = 1) %>%
+  autofit()
+
+# Clear the Value column for header rows
+for (r in header_indices) {
+  ft2 <- compose(ft2, i = r, j = 2, value = as_paragraph(""))
+}
+
+doc2 <- read_docx() %>%
+  body_add_fpar(fpar(ftext("Table 2. Characteristics of included trials.",
+    fp_text(font.family = "Times New Roman", bold = TRUE, font.size = 12)))) %>%
+  body_add_par("", style = "Normal") %>%
+  body_add_flextable(ft2)
+
+print(doc2, target = "./out/tables/2d_table2_characteristics.docx")
+cat("Exported Table 2 Word file to ./out/tables/2d_table2_characteristics.docx\n")

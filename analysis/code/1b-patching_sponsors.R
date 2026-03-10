@@ -5,7 +5,7 @@ library(stringr)
 load("./data/finalSample.rda")
 
 # Read the patch file with sponsor data
-patch_data <- read.csv("./code/node_script/patch_file_pg.csv")
+patch_data <- read.csv("./code/node_scripts/patch_file_pg.csv")
 
 # Check the structure of both datasets
 cat("Original df dimensions:", dim(df), "\n")
@@ -81,12 +81,12 @@ if (mismatch_count > 0) {
         head(10)
     print(mismatches)
 } else {
-    cat("\n✅ All Funder Types match the first sponsor type!\n")
+    cat("\nAll Funder Types match the first sponsor type!\n")
 }
 
-# Save the patched data back to finalSample.rda
+# Save the patched data to a separate file so rerunning 1-processing_ctgov.R
+# does not overwrite the patched version
 df <- df_patched
-save(df, file = "./data/finalSample.rda")
+save(df, file = "./data/finalSamplePatched.rda")
 
-cat("\n✅ Successfully patched finalSample.rda with sponsor data!\n")
-cat("Updated file saved to: ./data/finalSample.rda\n")
+cat("\nSuccessfully patched and saved to: ./data/finalSamplePatched.rda\n")

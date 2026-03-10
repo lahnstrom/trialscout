@@ -147,7 +147,67 @@ print(df %>%
         group_by(registry, has_summary_results) %>%
         summarise(n = n(), .groups = "drop"))
 
-# ===== 7. EXPORT =====
+# ===== 7. CROSS-REGISTRATION ANALYSIS =====
+# In the Nordic dataset, trials registered in both EUCTR and ClinicalTrials.gov
+# have both eudract_id and nct_id populated. The registry column reflects the
+# primary trial ID (main_id) used in the dataset, which determines how the trial
+# is classified in per-registry performance analyses.
+# Note: The Nordic paper (Nilsonne et al. 2025) preferred EUCTR for cross-registered
+# trials, but TrialScout was run against main_id, so registry assignment here reflects
+# which ID was actually used for evaluation.
+
+# Non-exclusive registry counts (a trial can be counted in both)
+# These match the figures reported in Nilsonne et al. (2025) Table 1
+n_nordic_with_nct <- df_nordic %>%
+  filter(!is.na(nct_id) & nct_id != "") %>% nrow()
+n_nordic_with_eudract <- df_nordic %>%
+  filter(!is.na(eudract_id) & eudract_id != "") %>% nrow()
+
+add_result("cross_registration", "n_nordic_registered_ctgov", n_nordic_with_nct,
+           format(n_nordic_with_nct, big.mark = ","))
+add_result("cross_registration", "n_nordic_registered_euctr", n_nordic_with_eudract,
+           format(n_nordic_with_eudract, big.mark = ","))
+
+nordic_cross_registered <- df_nordic %>%
+  filter(!is.na(eudract_id) & eudract_id != "" &
+         !is.na(nct_id) & nct_id != "")
+
+n_cross_registered <- nrow(nordic_cross_registered)
+n_cross_as_euctr <- nordic_cross_registered %>%
+  filter(tolower(registry) == "euctr") %>% nrow()
+n_cross_as_ctgov <- nordic_cross_registered %>%
+  filter(tolower(registry) == "ctgov") %>% nrow()
+
+# Of cross-registered trials, how many ended up in the final validation dataset?
+cross_ids <- nordic_cross_registered$main_id
+n_cross_in_final <- df %>% filter(trial_id %in% cross_ids) %>% nrow()
+n_cross_in_final_euctr <- df %>% filter(trial_id %in% cross_ids, registry == "euctr") %>% nrow()
+n_cross_in_final_ctgov <- df %>% filter(trial_id %in% cross_ids, registry == "ctgov") %>% nrow()
+
+cat("\n===== CROSS-REGISTRATION ANALYSIS =====\n")
+cat("Nordic trials registered at ClinicalTrials.gov (non-exclusive):", n_nordic_with_nct, "\n")
+cat("Nordic trials registered in EUCTR (non-exclusive):", n_nordic_with_eudract, "\n")
+cat("Nordic trials registered in both EUCTR and ClinicalTrials.gov:", n_cross_registered, "\n")
+cat("  Classified under EUCTR (EudraCT as main_id):", n_cross_as_euctr, "\n")
+cat("  Classified under ClinicalTrials.gov (NCT as main_id):", n_cross_as_ctgov, "\n")
+cat("Cross-registered trials in final validation dataset:", n_cross_in_final, "\n")
+cat("  As EUCTR:", n_cross_in_final_euctr, "\n")
+cat("  As ClinicalTrials.gov:", n_cross_in_final_ctgov, "\n")
+
+add_result("cross_registration", "n_cross_registered_nordic", n_cross_registered,
+           format(n_cross_registered, big.mark = ","))
+add_result("cross_registration", "n_cross_as_euctr", n_cross_as_euctr,
+           format(n_cross_as_euctr, big.mark = ","))
+add_result("cross_registration", "n_cross_as_ctgov", n_cross_as_ctgov,
+           format(n_cross_as_ctgov, big.mark = ","))
+add_result("cross_registration", "n_cross_in_final", n_cross_in_final,
+           format(n_cross_in_final, big.mark = ","))
+add_result("cross_registration", "n_cross_in_final_euctr", n_cross_in_final_euctr,
+           format(n_cross_in_final_euctr, big.mark = ","))
+add_result("cross_registration", "n_cross_in_final_ctgov", n_cross_in_final_ctgov,
+           format(n_cross_in_final_ctgov, big.mark = ","))
+
+# ===== 8. EXPORT =====
 
 write.csv(df, "./out/validation_dataset_all_registries.csv", row.names = FALSE)
 cat("\nOutput written to: ./out/validation_dataset_all_registries.csv\n")
