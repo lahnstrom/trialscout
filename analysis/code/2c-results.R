@@ -455,15 +455,20 @@ Predicted_data_year$tool_results <- predict(logistic_model_year_uncentered, Pred
 
 # Completion year scatter plot
 summary_data <- merged_trials_year %>%
-  group_by(completion_year) %>%
+  mutate(year_display = ifelse(completion_year < 2006, 2005, completion_year)) %>%
+  group_by(year_display) %>%
   summarise(
     proportion = mean(tool_results == 1),
     trial_count = n(),
     .groups = "drop"
   )
 
-underlying_data_plot_year <- ggplot(summary_data, aes(x = completion_year, y = proportion * 100)) +
+year_breaks <- c(2005, 2010, 2015, 2020)
+year_labels <- c("<2006", "2010", "2015", "2020")
+
+underlying_data_plot_year <- ggplot(summary_data, aes(x = year_display, y = proportion * 100)) +
   geom_point(aes(size = trial_count), color = "steelblue", alpha = 0.7) +
+  scale_x_continuous(breaks = year_breaks, labels = year_labels) +
   scale_y_continuous(
     labels = function(x) paste0(x, "%"),
     limits = c(0, 100)
@@ -855,10 +860,7 @@ ft3 <- flextable(t3_ft_data) %>%
   align(align = "left", part = "all") %>%
   align(j = 2:5, align = "center", part = "all") %>%
   fontsize(size = 9, part = "all") %>%
-  set_table_properties(layout = "fixed", width = 1) %>%
-  width(j = 1, width = 2.1) %>%
-  width(j = 2:4, width = 1.4) %>%
-  width(j = 5, width = 0.5)
+  set_table_properties(layout = "autofit", width = 1)
 
 # Clear data columns for header rows
 for (r in t3_header_indices) {

@@ -12,7 +12,7 @@ publication_discovery [label = 'Publication discovery' shape=ellipse fillcolor="
 
 linked_publications [label = 'Publications linked\nat registration' shape=cylinder]
 pubmed_search [label = 'Pubmed query -\npredefined' shape=cylinder]
-pubmed_gpt [label = 'PubMed query -\nLLM' shape=cylinder]
+pubmed_gpt [label = 'PubMed query -\nChatGPT-5.1' shape=cylinder]
 google_scholar [label = 'Google Scholar and\nCitation Matcher API' shape=cylinder]
 
 candidate_publications [label = 'Candidate publications' fillcolor = "#444F5A" fontcolor=white]

@@ -19,9 +19,9 @@ const csv = require("csv-parser");
 const { createObjectCsvWriter } = require("csv-writer");
 
 // --- CONFIGURATION ---
-const INPUT_CSV_PATH = join(__dirname, "../../../tool/data/final-sample-ctgov.csv");
+const INPUT_CSV_PATH = join(__dirname, "../../../prototype/data/final-sample-ctgov.csv");
 const OUTPUT_CSV_PATH = join(__dirname, "patch_file_pg.csv");
-const JSON_DIR = join(__dirname, "../../../tool/data/ctg-studies.json");
+const JSON_DIR = join(__dirname, "../../../prototype/data/ctg-studies.json");
 
 /**
  * Read all NCT IDs from the input CSV (semicolon-separated).

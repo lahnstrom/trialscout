@@ -537,6 +537,36 @@ add_result("manual_review", "fn_reclass_rate_final",
            ifelse(is.na(fn_rate_final), "NA",
                   sprintf("%d/%d (%.1f%%)", fn_reclass_final, nrow(fn_final_reviewed), fn_rate_final * 100)))
 
+# -- 95% Binomial confidence intervals for reclassification rates --
+fp_binom <- binom.test(fp_reclass_final, nrow(fp_final_reviewed))
+fn_binom <- binom.test(fn_reclass_final, nrow(fn_final_reviewed))
+
+# Overall human error: FP reclassified as TP + FN reclassified as TN
+total_reviewed <- nrow(fp_final_reviewed) + nrow(fn_final_reviewed)
+total_human_error <- fp_reclass_final + fn_reclass_final
+overall_binom <- binom.test(total_human_error, total_reviewed)
+
+add_result("manual_review", "fp_reclass_95ci",
+           sprintf("%.1f-%.1f", fp_binom$conf.int[1] * 100, fp_binom$conf.int[2] * 100),
+           sprintf("%d/%d (%.1f%%, 95%% CI %.1f-%.1f%%)",
+                   fp_reclass_final, nrow(fp_final_reviewed),
+                   fp_rate_final * 100,
+                   fp_binom$conf.int[1] * 100, fp_binom$conf.int[2] * 100))
+
+add_result("manual_review", "fn_reclass_95ci",
+           sprintf("%.1f-%.1f", fn_binom$conf.int[1] * 100, fn_binom$conf.int[2] * 100),
+           sprintf("%d/%d (%.1f%%, 95%% CI %.1f-%.1f%%)",
+                   fn_reclass_final, nrow(fn_final_reviewed),
+                   fn_rate_final * 100,
+                   fn_binom$conf.int[1] * 100, fn_binom$conf.int[2] * 100))
+
+add_result("manual_review", "overall_human_error_95ci",
+           sprintf("%.1f-%.1f", overall_binom$conf.int[1] * 100, overall_binom$conf.int[2] * 100),
+           sprintf("%d/%d (%.1f%%, 95%% CI %.1f-%.1f%%)",
+                   total_human_error, total_reviewed,
+                   total_human_error / total_reviewed * 100,
+                   overall_binom$conf.int[1] * 100, overall_binom$conf.int[2] * 100))
+
 # -- FN publication discovery analysis (confirmed FN only) --
 # Did the tool even find the correct publication among the PMIDs it prompted?
 # Only analyze confirmed FN (has_results_final == TRUE), excluding reclassified TN
@@ -586,7 +616,8 @@ cat("Reclassified as TP (consensus):", fp_reclass_consensus, "/", nrow(fp_consen
     sprintf("(%.1f%%)\n", fp_rate_consensus * 100))
 if (!is.na(fp_rate_final)) {
   cat("Reclassified as TP (final):    ", fp_reclass_final, "/", nrow(fp_final_reviewed),
-      sprintf("(%.1f%%)\n", fp_rate_final * 100))
+      sprintf("(%.1f%%, 95%% CI %.1f-%.1f%%)\n", fp_rate_final * 100,
+              fp_binom$conf.int[1] * 100, fp_binom$conf.int[2] * 100))
 }
 
 cat("\n-- False Negatives --\n")
@@ -611,8 +642,14 @@ if (!is.na(fn_rate_consensus)) {
 }
 if (!is.na(fn_rate_final)) {
   cat("Reclassified as TN (final):    ", fn_reclass_final, "/", nrow(fn_final_reviewed),
-      sprintf("(%.1f%%)\n", fn_rate_final * 100))
+      sprintf("(%.1f%%, 95%% CI %.1f-%.1f%%)\n", fn_rate_final * 100,
+              fn_binom$conf.int[1] * 100, fn_binom$conf.int[2] * 100))
 }
+cat("\n-- Overall Human Error --\n")
+cat("Human error (combined):        ", total_human_error, "/", total_reviewed,
+    sprintf("(%.1f%%, 95%% CI %.1f-%.1f%%)\n",
+            total_human_error / total_reviewed * 100,
+            overall_binom$conf.int[1] * 100, overall_binom$conf.int[2] * 100))
 cat("\nPublication discovery breakdown (confirmed FN only, n=", nrow(fn_confirmed), "):\n", sep = "")
 cat("  Tool found correct pub:      ", fn_tool_found, "/", nrow(fn_confirmed),
     sprintf("(%.1f%%)\n", fn_tool_found / nrow(fn_confirmed) * 100))
