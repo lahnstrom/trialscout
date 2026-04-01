@@ -373,12 +373,24 @@ plot_enrolment_deciles <- ggplot(proportions, aes(x = reorder(label, decile), y 
   ) +
   labs(
     x = "Enrolment (n)",
-    y = "Percentage with\nReported Results (%)"
+    y = "Proportion with\nReported Results"
   ) +
   my_theme +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 ggsave("./out/figures/2c_enrollment_deciles.pdf", plot = plot_enrolment_deciles, device = "pdf", width = 10, height = 6)
+
+write.csv(
+  proportions %>%
+    transmute(
+      decile,
+      enrollment_min = min_enrolment,
+      enrollment_max = max_enrolment,
+      enrollment_range = gsub("\n", "", label),
+      proportion_reported_results_pct = round(proportion * 100, 1)
+    ),
+  "./out/figures/2c_enrollment_deciles_data.csv", row.names = FALSE
+)
 
 # ===== 6. LOGISTIC REGRESSION: COMPLETION YEAR =====
 
@@ -476,12 +488,23 @@ underlying_data_plot_year <- ggplot(summary_data, aes(x = year_display, y = prop
   my_theme +
   labs(
     x = "Completion Year",
-    y = "Percentage with\nPublished Results (%)",
+    y = "Proportion with\nPublished Results",
     size = "Number of Trials"
   ) +
   theme(axis.text.x = element_text(angle = 0))
 print(underlying_data_plot_year)
 ggsave("./out/figures/2c_completion_year_scatter.pdf", plot = underlying_data_plot_year, device = "pdf", width = 10, height = 6)
+
+write.csv(
+  summary_data %>%
+    transmute(
+      completion_year = year_display,
+      year_label = ifelse(year_display == 2005, "<2006", as.character(year_display)),
+      trial_count,
+      proportion_published_results_pct = round(proportion * 100, 1)
+    ),
+  "./out/figures/2c_completion_year_scatter_data.csv", row.names = FALSE
+)
 
 # ===== 7. CHI-SQUARED: REPORTED RESULTS (tool_or_summary) =====
 
@@ -831,13 +854,17 @@ process_t3_category <- function(cat_name, header_label, level_order = NULL) {
       arrange(level_fmt) %>% mutate(level_fmt = as.character(level_fmt))
   }
 
+  # Get p-value from whichever row has it (survives reordering)
+  p_val <- cat_data$p_value[cat_data$p_value != ""]
+  p_val <- if (length(p_val) > 0) p_val[1] else ""
+
   for (i in seq_len(nrow(cat_data))) {
     add_t3_row(
       cat_data$level_fmt[i],
       cat_data$summary_reported[i],
       cat_data$summary_published[i],
       cat_data$summary_summary_result[i],
-      ifelse(i == 1, cat_data$p_value[i], ""))
+      ifelse(i == 1, p_val, ""))
   }
 }
 
