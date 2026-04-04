@@ -35,7 +35,21 @@ export const fetchRegistration = async (trialId) => {
     );
   }
 
-  return await res.text();
+  if (res.redirected) {
+    throw new Error(
+      `DRKS registration not found for ${trialId} (redirected to ${res.url})`
+    );
+  }
+
+  const html = await res.text();
+
+  if (html.includes('<h2 class="modal-title">Error!</h2>')) {
+    throw new Error(
+      `DRKS registration not found for ${trialId} (error page returned)`
+    );
+  }
+
+  return html;
 };
 
 /**

@@ -4,11 +4,6 @@ import ncbi from "node-ncbi";
 
 const PUBMED_API_KEY = process.env.PUBMED_API_KEY;
 
-export const regIsAfterPublication = (reg, publ) => {
-  // TODO: Implement
-  return reg.publicationDate < publ.publicationDate;
-};
-
 export const abstractListToString = (abstractList) =>
   abstractList
     ?.map((abs) => {
@@ -65,7 +60,6 @@ export const authorListToString = (authorList) => {
 };
 
 export const parsePubmedAbstractXML = (xml) => {
-  // TODO: NOW FAILS SILENTLY, MUST BE FIXED
   const articleSet = childWithName(xml, "PubmedArticleSet");
   if (!articleSet) {
     throw new Error(
@@ -415,17 +409,13 @@ export const parsePubmedRecord = (raw, includeRaw = true) => {
 
   const date = acceptedDate || dateCompleted || dateRevised;
 
-  if (pmid == "36009946") {
-    console.log("Break here");
-  }
-
   const year = date?.Year?._text;
   const month = date?.Month?._text;
   const day = date?.Day?._text;
 
   const publicationDate = `${year ? year : ""}${
     month ? `-${month?.length > 1 ? month : "0" + month}` : ""
-  }${day && month ? `-${day?.length > 1 ? day : "0" + month}` : ""}`;
+  }${day && month ? `-${day?.length > 1 ? day : "0" + day}` : ""}`;
 
   // Extract Authors
   const authorList = medlineCitation?.Article?.AuthorList?.Author;

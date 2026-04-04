@@ -1,10 +1,8 @@
 import commandLineArgs from "command-line-args";
 import pRetry, { AbortError } from "p-retry";
-import seedrandom from "seedrandom";
 import axios from "axios";
 import fs from "fs";
 import config from "config";
-import _ from "lodash";
 import path from "path";
 import { fileURLToPath } from "url";
 import PQueue from "p-queue";
@@ -121,7 +119,7 @@ export const removeDuplicatePublications = (publications) => {
       ];
       return prev;
     }
-    prev[curPmid] = _.cloneDeep(cur);
+    prev[curPmid] = structuredClone(cur);
     return prev;
   }, {});
   return Object.values(uniquePubSet);
